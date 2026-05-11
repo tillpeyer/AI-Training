@@ -21,20 +21,24 @@ The Lunch Order API is a fictional service that handles a daily lunch menu and p
 git clone <repo-url> lunch-order
 cd lunch-order
 
-# 2. Install BMAD with the ELCAi template
-npx bmad-method@beta install   # pick "Claude Code" + ELCAi template
+# 2. Install BMAD (pick "Claude Code" as the IDE)
+npx bmad-method@beta install
 
-# 3. Verify the app boots
+# 3. Install the ELCAi method on top — adds the Auditor (Amelie) + ELCA agent customisations
+npm install -g @elca-agenticengineering/elcai-method
+elcai-method install
+
+# 4. Verify the app boots
 ./mvnw spring-boot:run         # or: mvn spring-boot:run
 # → http://localhost:8080/actuator/health = UP
 
-# 4. Open Claude Code
+# 5. Open Claude Code
 claude
 
-# 5. Pick one story from docs/stories/, then:
+# 6. Pick one story from docs/stories/, then:
 /bmad-agent-bmm-sm             # lock the story
 /bmad-agent-bmm-dev            # implement it
-/bmad-agent-bmm-qa             # verify
+/bmad-agent-bmm-qa             # verify (or /bmad-agent-bmm-tea for the ELCAi TEA agent)
 ```
 
 Each story is **independent** — pick whichever appeals to you. Story 1 is the smallest, recommended as a first cycle.
