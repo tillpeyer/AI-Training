@@ -4,6 +4,8 @@ import ch.elca.training.lunch.menu.MenuItemNotFoundException;
 import ch.elca.training.lunch.menu.MenuRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class OrderService {
 
@@ -30,5 +32,9 @@ public class OrderService {
         order.setStatus(OrderStatus.SUBMITTED);
 
         return orderRepository.save(order);
+    }
+
+    public List<Order> listMine(String userId) {
+        return orderRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }
 }
