@@ -11,8 +11,11 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class MenuServiceTest {
@@ -22,6 +25,31 @@ class MenuServiceTest {
 
     @InjectMocks
     private MenuService menuService;
+
+    @Test
+    void getById_returnsItemWhenFound() {
+        UUID id = UUID.randomUUID();
+        MenuItem stored = new MenuItem("Tartare", new BigDecimal("18.00"), false);
+        stored.setId(id);
+
+        when(menuRepository.findById(id)).thenReturn(Optional.of(stored));
+
+        MenuItem result = menuService.getById(id);
+
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getName()).isEqualTo("Tartare");
+        assertThat(result.isAvailable()).isFalse();
+    }
+
+    @Test
+    void getById_throwsMenuItemNotFoundWhenAbsent() {
+        UUID id = UUID.randomUUID();
+        when(menuRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> menuService.getById(id))
+                .isInstanceOf(MenuItemNotFoundException.class)
+                .hasMessageContaining(id.toString());
+    }
 
     @Test
     void addItem_savesItemWithCorrectFieldsAndAvailableTrue() {

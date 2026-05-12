@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -66,6 +68,39 @@ class MenuControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
 
         verify(menuService).listAvailable();
+    }
+
+    // --- STORY-7: GET /{id} tests ---
+
+    @Test
+    void getById_returnsOkWithMenuItem() throws Exception {
+        UUID itemId = UUID.randomUUID();
+        // Use available=false to prove AC-1: the endpoint returns items regardless of availability.
+        MenuItem item = new MenuItem("Soupe du jour", new BigDecimal("8.50"), false);
+        item.setId(itemId);
+
+        when(menuService.getById(eq(itemId))).thenReturn(item);
+
+        mockMvc.perform(get("/api/v1/menu/{id}", itemId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(itemId.toString()))
+                .andExpect(jsonPath("$.name").value("Soupe du jour"))
+                .andExpect(jsonPath("$.priceChf").value(8.50))
+                .andExpect(jsonPath("$.available").value(false));
+
+        verify(menuService).getById(itemId);
+    }
+
+    @Test
+    void getById_returns404WhenUnknown() throws Exception {
+        UUID unknownId = UUID.randomUUID();
+
+        when(menuService.getById(eq(unknownId))).thenThrow(new MenuItemNotFoundException(unknownId));
+
+        mockMvc.perform(get("/api/v1/menu/{id}", unknownId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("MENU_ITEM_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 
     // --- STORY-5: POST /items tests ---
