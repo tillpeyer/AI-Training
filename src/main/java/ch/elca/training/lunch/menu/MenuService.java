@@ -16,4 +16,12 @@ public class MenuService {
     public List<MenuItem> listAvailable() {
         return menuRepository.findAllByAvailableTrue();
     }
+
+    public MenuItem addItem(CreateMenuItemRequest req) {
+        MenuItem item = new MenuItem();
+        item.setName(req.name());
+        item.setPriceChf(req.priceChf());
+        item.setAvailable(true);
+        return menuRepository.save(item);
+    }
 }
