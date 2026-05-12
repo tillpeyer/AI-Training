@@ -140,7 +140,6 @@ class OrderServiceTest {
         order.setStatus(OrderStatus.SUBMITTED);
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         orderService.cancel(orderId, "emp1");
 
