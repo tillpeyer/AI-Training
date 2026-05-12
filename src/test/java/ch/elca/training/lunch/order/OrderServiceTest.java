@@ -129,4 +129,86 @@ class OrderServiceTest {
 
         verify(orderRepository, never()).save(any());
     }
+
+    @Test
+    void cancel_flipsStatusToCancelledWhenOwnerCancelsSubmittedOrder() {
+        UUID orderId = UUID.randomUUID();
+
+        Order order = new Order();
+        order.setId(orderId);
+        order.setUserId("emp1");
+        order.setStatus(OrderStatus.SUBMITTED);
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        orderService.cancel(orderId, "emp1");
+
+        ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
+        verify(orderRepository).save(captor.capture());
+        assertThat(captor.getValue().getStatus()).isEqualTo(OrderStatus.CANCELLED);
+    }
+
+    @Test
+    void cancel_throwsOrderNotFoundWhenIdUnknown() {
+        UUID orderId = UUID.randomUUID();
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> orderService.cancel(orderId, "emp1"))
+                .isInstanceOf(OrderNotFoundException.class);
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void cancel_throwsNotOrderOwnerWhenDifferentUser() {
+        UUID orderId = UUID.randomUUID();
+
+        Order order = new Order();
+        order.setId(orderId);
+        order.setUserId("emp1");
+        order.setStatus(OrderStatus.SUBMITTED);
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> orderService.cancel(orderId, "emp2"))
+                .isInstanceOf(NotOrderOwnerException.class);
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void cancel_throwsAlreadyCancelledWhenStatusIsCancelled() {
+        UUID orderId = UUID.randomUUID();
+
+        Order order = new Order();
+        order.setId(orderId);
+        order.setUserId("emp1");
+        order.setStatus(OrderStatus.CANCELLED);
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> orderService.cancel(orderId, "emp1"))
+                .isInstanceOf(AlreadyCancelledException.class);
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void cancel_throwsNotOrderOwnerEvenWhenOrderIsAlreadyCancelled() {
+        UUID orderId = UUID.randomUUID();
+
+        Order order = new Order();
+        order.setId(orderId);
+        order.setUserId("emp1");
+        order.setStatus(OrderStatus.CANCELLED);
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> orderService.cancel(orderId, "emp2"))
+                .isInstanceOf(NotOrderOwnerException.class);
+
+        verify(orderRepository, never()).save(any());
+    }
 }

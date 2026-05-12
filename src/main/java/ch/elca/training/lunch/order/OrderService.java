@@ -5,6 +5,7 @@ import ch.elca.training.lunch.menu.MenuRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -36,5 +37,18 @@ public class OrderService {
 
     public List<Order> listMine(String userId) {
         return orderRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public void cancel(UUID orderId, String userId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        if (!order.getUserId().equals(userId)) {
+            throw new NotOrderOwnerException(orderId, userId);
+        }
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new AlreadyCancelledException(orderId);
+        }
+        order.setStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
     }
 }

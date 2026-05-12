@@ -1,6 +1,9 @@
 package ch.elca.training.lunch.common;
 
 import ch.elca.training.lunch.menu.MenuItemNotFoundException;
+import ch.elca.training.lunch.order.AlreadyCancelledException;
+import ch.elca.training.lunch.order.NotOrderOwnerException;
+import ch.elca.training.lunch.order.OrderNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -39,5 +42,23 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleMenuItemNotFound(MenuItemNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ApiError("MENU_ITEM_NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ApiError> handleOrderNotFound(OrderNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiError("ORDER_NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(NotOrderOwnerException.class)
+    public ResponseEntity<ApiError> handleNotOrderOwner(NotOrderOwnerException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiError("NOT_OWNER", ex.getMessage()));
+    }
+
+    @ExceptionHandler(AlreadyCancelledException.class)
+    public ResponseEntity<ApiError> handleAlreadyCancelled(AlreadyCancelledException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiError("ALREADY_CANCELLED", ex.getMessage()));
     }
 }
