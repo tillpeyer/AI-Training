@@ -1,6 +1,6 @@
 # Story 2.7: Get a menu item by ID
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -111,16 +111,27 @@ _(None — the story is fully constrained by existing infrastructure.)_
 
 ### Agent Model Used
 
-_(to be filled)_
+Sonnet 4.6 (worked-example subagent)
 
 ### Debug Log References
 
-_(to be filled)_
+_(none — all tests passed on first run)_
 
 ### Completion Notes List
 
-_(to be filled)_
+- Added `getById(UUID id)` to `MenuService` using `findById(...).orElseThrow(...)`; no repository
+  change needed since `CrudRepository.findById` is already inherited.
+- Added `@GetMapping("/{id}")` to `MenuController` with `@PathVariable UUID id`; delegated to
+  `menuService.getById(id)`. Added `PathVariable` and `UUID` imports.
+- Added 2 controller tests to `MenuControllerTest`: happy path with `available=false` (proves
+  AC-1 — no availability gate), and 404 path asserting both `$.code` and `$.message` (carry-forward
+  from STORY-3 CR). Also added 2 optional service unit tests to `MenuServiceTest` covering the
+  found and not-found branches.
+- `mvnw.cmd test`: **41 tests, 0 failures, 0 errors** (37 existing + 2 controller + 2 service).
 
 ### File List
 
-_(to be filled)_
+- `src/main/java/ch/elca/training/lunch/menu/MenuService.java` (modified — +`getById` method)
+- `src/main/java/ch/elca/training/lunch/menu/MenuController.java` (modified — +`GET /{id}` endpoint)
+- `src/test/java/ch/elca/training/lunch/menu/MenuControllerTest.java` (modified — +2 test methods)
+- `src/test/java/ch/elca/training/lunch/menu/MenuServiceTest.java` (modified — +2 test methods)

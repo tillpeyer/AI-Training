@@ -3,6 +3,7 @@ package ch.elca.training.lunch.menu;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class MenuService {
@@ -15,6 +16,11 @@ public class MenuService {
 
     public List<MenuItem> listAvailable() {
         return menuRepository.findAllByAvailableTrue();
+    }
+
+    public MenuItem getById(UUID id) {
+        return menuRepository.findById(id)
+                .orElseThrow(() -> new MenuItemNotFoundException(id));
     }
 
     public MenuItem addItem(CreateMenuItemRequest req) {
