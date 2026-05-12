@@ -1,12 +1,14 @@
 package ch.elca.training.lunch.common;
 
 import ch.elca.training.lunch.menu.MenuItemNotFoundException;
+import ch.elca.training.lunch.menu.NotAdminException;
 import ch.elca.training.lunch.order.AlreadyCancelledException;
 import ch.elca.training.lunch.order.NotOrderOwnerException;
 import ch.elca.training.lunch.order.OrderNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,14 +30,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationErrors(MethodArgumentNotValidException ex) {
         BindingResult bindingResult = ex.getBindingResult();
-        boolean quantityError = bindingResult.getFieldErrors().stream()
-                .anyMatch(fe -> "quantity".equals(fe.getField()));
-        if (quantityError) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiError("INVALID_QUANTITY", "quantity must be between 1 and 10"));
-        }
+        FieldError fieldError = bindingResult.getFieldError();
+        String field = fieldError != null ? fieldError.getField() : null;
+        // Map field name to a specific error code; unknown/null fields fall back to INVALID_INPUT.
+        // TODO: future refactor — derive code automatically via INVALID_<FIELD_NAME_UPPERCASE>
+        String code = switch (field != null ? field : "") {
+            case "quantity" -> "INVALID_QUANTITY";
+            case "name" -> "INVALID_NAME";
+            case "priceChf" -> "INVALID_PRICE";
+            default -> "INVALID_INPUT";
+        };
+        String message = fieldError != null ? fieldError.getDefaultMessage() : "Request validation failed";
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError("INVALID_REQUEST", "Request validation failed"));
+                .body(new ApiError(code, message));
+    }
+
+    @ExceptionHandler(NotAdminException.class)
+    public ResponseEntity<ApiError> handleNotAdmin(NotAdminException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiError("NOT_ADMIN", ex.getMessage()));
     }
 
     @ExceptionHandler(MenuItemNotFoundException.class)
