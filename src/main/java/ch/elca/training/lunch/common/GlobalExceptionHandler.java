@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingRequestHeaderException.class)
-    public ResponseEntity<ApiError> handleMissingHeader(MissingRequestHeaderException ex) {
+    public ResponseEntity<ApiError> handleMissingHeader(MissingRequestHeaderException ex)
+            throws MissingRequestHeaderException {
         if ("X-User-Id".equals(ex.getHeaderName())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiError("MISSING_USER", "Required header 'X-User-Id' is missing"));
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError("MISSING_HEADER", "Required header '" + ex.getHeaderName() + "' is missing"));
+        throw ex; // intentionally unhandled: each required header must have its own mapping
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
