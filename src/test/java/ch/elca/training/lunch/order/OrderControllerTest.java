@@ -17,10 +17,14 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -167,6 +171,70 @@ class OrderControllerTest {
         mockMvc.perform(get("/api/v1/orders/me"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("MISSING_USER"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void cancel_returnsNoContentOnSuccess() throws Exception {
+        UUID orderId = UUID.randomUUID();
+
+        doNothing().when(orderService).cancel(eq(orderId), eq("emp1"));
+
+        mockMvc.perform(patch("/api/v1/orders/{id}/cancel", orderId)
+                        .header("X-User-Id", "emp1"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    void cancel_returns400WhenUserHeaderMissing() throws Exception {
+        UUID orderId = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/v1/orders/{id}/cancel", orderId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("MISSING_USER"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void cancel_returns404WhenOrderUnknown() throws Exception {
+        UUID orderId = UUID.randomUUID();
+
+        doThrow(new OrderNotFoundException(orderId))
+                .when(orderService).cancel(eq(orderId), any());
+
+        mockMvc.perform(patch("/api/v1/orders/{id}/cancel", orderId)
+                        .header("X-User-Id", "emp1"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("ORDER_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void cancel_returns403WhenNotOwner() throws Exception {
+        UUID orderId = UUID.randomUUID();
+
+        doThrow(new NotOrderOwnerException(orderId, "emp2"))
+                .when(orderService).cancel(eq(orderId), any());
+
+        mockMvc.perform(patch("/api/v1/orders/{id}/cancel", orderId)
+                        .header("X-User-Id", "emp2"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("NOT_OWNER"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void cancel_returns409WhenAlreadyCancelled() throws Exception {
+        UUID orderId = UUID.randomUUID();
+
+        doThrow(new AlreadyCancelledException(orderId))
+                .when(orderService).cancel(eq(orderId), any());
+
+        mockMvc.perform(patch("/api/v1/orders/{id}/cancel", orderId)
+                        .header("X-User-Id", "emp1"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("ALREADY_CANCELLED"))
                 .andExpect(jsonPath("$.message").isNotEmpty());
     }
 }
