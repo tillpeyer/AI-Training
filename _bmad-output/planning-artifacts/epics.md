@@ -52,3 +52,19 @@
 **Priority:** Should
 **Depends on:** Story 1.1
 **Summary:** `POST /api/v1/menu/items` gated by `X-Admin: true` (403 otherwise) with validation on `name` and `priceChf`.
+
+## Epic 2: Lunch Order API v1 — Frontend (Claude-designed)
+
+**Status:** backlog
+**Goal:** Bring the v1 API to the browser. Build a small React + Vite + TypeScript SPA where employees view today's menu, place and cancel their own orders, and the canteen admin maintains the menu — with the UI designed in collaboration with Claude Code before implementation.
+**Source:** `docs/stories/STORY-6-frontend-v1.md`
+**Story drafts location:** `docs/stories/STORY-6-frontend-v1.md`
+
+### Story 2.1: Full v1 frontend (Claude-designed)
+
+**Source draft:** `docs/stories/STORY-6-frontend-v1.md`
+**Persona:** Employee + Canteen admin
+**Estimate:** 8 points (5 sub-features in one story — participants may split)
+**Priority:** Must (kicks off Epic 2)
+**Depends on:** Stories 1.1 – 1.5 (the v1 backend must be running)
+**Summary:** New `frontend/` directory scaffolded with `npm create vite@latest`. Three routes: `/` (menu + order form), `/orders` (my orders + cancel), `/admin` (add item). Identity via a "Sign in as" input persisted to `localStorage`; `X-Admin: true` sent automatically on `/admin`. CORS via Vite proxy. Design step: capture Claude-proposed wireframes in `frontend/DESIGN.md` before coding.

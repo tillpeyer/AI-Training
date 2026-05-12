@@ -47,3 +47,6 @@ development_status:
   1-4-cancel-one-of-my-orders: done
   1-5-admin-adds-a-menu-item: done
   epic-1-retrospective: optional
+  epic-2: backlog
+  2-1-frontend-v1: backlog
+  epic-2-retrospective: optional
