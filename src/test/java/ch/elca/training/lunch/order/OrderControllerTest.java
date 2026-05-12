@@ -74,7 +74,8 @@ class OrderControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"menuItemId\":\"" + menuItemId + "\",\"quantity\":2}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("MISSING_USER"));
+                .andExpect(jsonPath("$.code").value("MISSING_USER"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 
     @Test
@@ -86,7 +87,8 @@ class OrderControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"menuItemId\":\"" + menuItemId + "\",\"quantity\":0}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_QUANTITY"));
+                .andExpect(jsonPath("$.code").value("INVALID_QUANTITY"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 
     @Test
@@ -98,7 +100,8 @@ class OrderControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"menuItemId\":\"" + menuItemId + "\",\"quantity\":11}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_QUANTITY"));
+                .andExpect(jsonPath("$.code").value("INVALID_QUANTITY"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 
     @Test
@@ -113,7 +116,8 @@ class OrderControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"menuItemId\":\"" + menuItemId + "\",\"quantity\":2}"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("MENU_ITEM_NOT_FOUND"));
+                .andExpect(jsonPath("$.code").value("MENU_ITEM_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 
     @Test
