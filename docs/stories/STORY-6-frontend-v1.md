@@ -34,11 +34,7 @@ Tech-spec section: *§API conventions and §Mock auth still apply — the fronte
 - **HTTP**: `fetch` is fine — don't pull in Axios unless you actually need it.
 - **State**: `useState` + `useEffect` for fetches. No Redux / Zustand / TanStack Query unless it earns its weight here.
 - **Styling**: pick one before you start — vanilla CSS, Tailwind, or a small component library (e.g. shadcn/ui via Radix). Whatever Claude proposes during the design step.
-- **CORS**: the Spring Boot backend doesn't allow CORS for `http://localhost:5173` out of the box. Either:
-  1. Add `@CrossOrigin(origins = "http://localhost:5173")` to the controllers, OR
-  2. Add a Vite proxy in `vite.config.ts` forwarding `/api` to `http://localhost:8080`.
-  
-  The proxy approach is cleaner and keeps the backend unchanged.
+- **CORS**: already configured on the backend (`ch.elca.training.lunch.common.WebConfig`) to allow `http://localhost:5173` (Vite default) for all methods used by the API. **No backend change needed.** If you prefer a Vite proxy instead, you can still add one in `vite.config.ts`, but it isn't required.
 - **Claude design step (do this first)**:
   1. Tell Claude "I'm building a React frontend for a lunch ordering API with these 5 features [list]. Propose a layout and component breakdown."
   2. Iterate on the proposal in conversation — challenge it, ask for alternatives, pick one.
@@ -52,6 +48,6 @@ Tech-spec section: *§API conventions and §Mock auth still apply — the fronte
 - [ ] `cd frontend && npm run lint` passes (Vite's `react-ts` template installs ESLint by default)
 - [ ] At least one component test using Vitest + `@testing-library/react` covers the happy path of one view (menu list rendering is the easiest)
 - [ ] Manual smoke check: boot the Spring Boot backend AND the Vite dev server simultaneously, walk through all 5 sub-features in a browser, screenshot the result for the PR description
-- [ ] No changes to `pom.xml` — the frontend is decoupled (no Spring static-resource integration in this story)
-- [ ] `frontend/node_modules/` and `frontend/dist/` added to `.gitignore`
+- [ ] No changes to `pom.xml` or any backend source — the frontend is decoupled
+- [ ] No changes to `.gitignore` needed — `node_modules/`, `dist/`, and `*.local` are already covered at the repo root
 - [ ] PR opened against `main` with the screenshots attached

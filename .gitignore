@@ -21,3 +21,9 @@ Thumbs.db
 .claude/
 _bmad/
 .mcp.json
+
+# Frontend (STORY-6 Epic 2)
+node_modules/
+dist/
+*.local
+
