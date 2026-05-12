@@ -11,12 +11,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,6 +80,38 @@ class OrderServiceTest {
                 .isInstanceOf(MenuItemNotFoundException.class);
 
         verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void listMine_returnsOnlyCallersOrdersInDescOrder() {
+        UUID menuItemId1 = UUID.randomUUID();
+        UUID menuItemId2 = UUID.randomUUID();
+
+        Order order1 = new Order();
+        order1.setId(UUID.randomUUID());
+        order1.setUserId("emp1");
+        order1.setMenuItemId(menuItemId1);
+        order1.setQuantity(1);
+        order1.setStatus(OrderStatus.SUBMITTED);
+
+        Order order2 = new Order();
+        order2.setId(UUID.randomUUID());
+        order2.setUserId("emp1");
+        order2.setMenuItemId(menuItemId2);
+        order2.setQuantity(2);
+        order2.setStatus(OrderStatus.CANCELLED);
+
+        List<Order> expected = List.of(order1, order2);
+
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        when(orderRepository.findAllByUserIdOrderByCreatedAtDesc("emp1")).thenReturn(expected);
+
+        List<Order> result = orderService.listMine("emp1");
+
+        verify(orderRepository).findAllByUserIdOrderByCreatedAtDesc(userIdCaptor.capture());
+        assertThat(userIdCaptor.getValue()).isEqualTo("emp1");
+        assertThat(result).isSameAs(expected);
+        assertThat(result).hasSize(2);
     }
 
     @Test
