@@ -1,6 +1,6 @@
 # Story 2.2: Admin toggles a menu item's availability
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -23,27 +23,27 @@ needing to delete it or hand-edit the database**.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Add request DTO** (AC: 1)
-  - [ ] 1.1 Create `UpdateAvailabilityRequest` record in `menu/`:
+- [x] **Task 1 — Add request DTO** (AC: 1)
+  - [x] 1.1 Create `UpdateAvailabilityRequest` record in `menu/`:
     ```java
     public record UpdateAvailabilityRequest(@NotNull Boolean available) {}
     ```
-  - [ ] 1.2 Mirrors the `CreateMenuItemRequest` pattern from Story 1-5 — same package, same
+  - [x] 1.2 Mirrors the `CreateMenuItemRequest` pattern from Story 1-5 — same package, same
         single-record-per-file convention.
 
-- [ ] **Task 2 — Extend `MenuService`** (AC: 1, 3)
-  - [ ] 2.1 Add `public MenuItem setAvailability(UUID id, boolean available)` to `MenuService`:
+- [x] **Task 2 — Extend `MenuService`** (AC: 1, 3)
+  - [x] 2.1 Add `public MenuItem setAvailability(UUID id, boolean available)` to `MenuService`:
     ```java
     MenuItem item = menuRepository.findById(id)
         .orElseThrow(() -> new MenuItemNotFoundException(id));
     item.setAvailable(available);
     return menuRepository.save(item);
     ```
-  - [ ] 2.2 No repository change needed — `findById` and `save` are inherited from
+  - [x] 2.2 No repository change needed — `findById` and `save` are inherited from
         `CrudRepository`.
 
-- [ ] **Task 3 — Extend `MenuController`** (AC: 1, 2, 3)
-  - [ ] 3.1 Add `@PatchMapping("/{id}/availability")` method to `MenuController`:
+- [x] **Task 3 — Extend `MenuController`** (AC: 1, 2, 3)
+  - [x] 3.1 Add `@PatchMapping("/{id}/availability")` method to `MenuController`:
     ```java
     @PatchMapping("/{id}/availability")
     public MenuItem setAvailability(
@@ -56,34 +56,35 @@ needing to delete it or hand-edit the database**.
         return menuService.setAvailability(id, req.available());
     }
     ```
-  - [ ] 3.2 Import `PatchMapping`. `PathVariable`, `RequestHeader`, `RequestBody`, `Valid`,
+  - [x] 3.2 Import `PatchMapping`. `PathVariable`, `RequestHeader`, `RequestBody`, `Valid`,
         `NotAdminException`, and `UUID` are already imported in `MenuController`.
-  - [ ] 3.3 **Admin-first check pattern (carry-forward from Story 1-5):** identical to the
+  - [x] 3.3 **Admin-first check pattern (carry-forward from Story 1-5):** identical to the
         existing `POST /api/v1/menu/items` handler. Same known caveat applies — `@Valid` fires
         before the method body, so a malformed body with a missing/wrong admin header surfaces
         as 400 rather than 403. **Do not** try to "fix" this; it is accepted scope per Story 1-5.
 
-- [ ] **Task 4 — Controller tests** (AC: 1, 2, 3)
-  - [ ] 4.1 Add `setAvailability_returnsOkAndUpdatesItem` to `MenuControllerTest`:
+- [x] **Task 4 — Controller tests** (AC: 1, 2, 3)
+  - [x] 4.1 Add `setAvailability_returnsOkAndUpdatesItem` to `MenuControllerTest`:
     - Mock `menuService.setAvailability(any(), eq(false))` to return a `MenuItem` with
       `available = false`.
     - PATCH with header `X-Admin: true` and body `{"available": false}`.
     - Assert 200, `$.available == false`, and `$.id`, `$.name`, `$.priceChf` all present.
     - Verify `menuService.setAvailability` was invoked with the correct id and `false`
       (use `ArgumentCaptor` — pattern carry-forward from Story 1-3).
-  - [ ] 4.2 Add `setAvailability_returns403WithoutAdmin` to `MenuControllerTest`:
+  - [x] 4.2 Add `setAvailability_returns403WithoutAdmin` to `MenuControllerTest`:
     - PATCH without the `X-Admin` header (or with `X-Admin: false`).
     - Assert 403, `$.code == "NOT_ADMIN"`, **`$.message` non-empty** (carry-forward from
       Story 1-3 CR: every error-path test must assert both fields).
     - Verify `menuService.setAvailability` was **never** invoked (`verifyNoInteractions`).
-  - [ ] 4.3 Add `setAvailability_returns404WhenUnknown` to `MenuControllerTest`:
+  - [x] 4.3 Add `setAvailability_returns404WhenUnknown` to `MenuControllerTest`:
     - Mock `menuService.setAvailability(any(), anyBoolean())` to throw
       `new MenuItemNotFoundException(id)`.
     - PATCH with `X-Admin: true` and a valid body.
     - Assert 404, `$.code == "MENU_ITEM_NOT_FOUND"`, `$.message` non-empty.
 
-- [ ] **Task 5 — Smoke check** (AC: all)
-  - [ ] 5.1 Run `mvn test` — all existing tests pass, 3 new tests added.
+- [x] **Task 5 — Smoke check** (AC: all)
+  - [x] 5.1 Run `mvn test` — all existing tests pass, 3 new tests added.
+        **Result: 44 tests, 0 failures, 0 errors (was 41).**
 
 ## Dev Notes
 
@@ -178,16 +179,42 @@ _(None — the story is fully constrained by existing infrastructure.)_
 
 ### Agent Model Used
 
-_(to be filled by Dev agent)_
+Claude Opus 4.7 (1M context) — Amelia (Dev agent persona)
 
 ### Debug Log References
 
-_(to be filled by Dev agent)_
+_(none — all tests passed on first run)_
 
 ### Completion Notes List
 
-_(to be filled by Dev agent)_
+- Added `UpdateAvailabilityRequest` record in `menu/` with `@NotNull Boolean available`,
+  mirroring `CreateMenuItemRequest`.
+- Added `MenuService.setAvailability(UUID id, boolean available)` using
+  `findById(...).orElseThrow(...)` then `setAvailable` + `save`. No repository change needed
+  (`findById` / `save` inherited from `CrudRepository`).
+- Added `MenuController.setAvailability(...)` with `@PatchMapping("/{id}/availability")`,
+  `@PathVariable UUID id`, `@RequestHeader X-Admin`, and `@Valid @RequestBody
+  UpdateAvailabilityRequest`. Admin-first check pattern identical to `POST /items` (Story 1-5).
+  Imported `PatchMapping`; all other annotations were already imported.
+- Added 3 controller tests in `MenuControllerTest`:
+  - `setAvailability_returnsOkAndUpdatesItem` (AC-1) — happy path, asserts response body
+    reflects `available=false`, captures id + boolean passed to service via `ArgumentCaptor`
+    (pattern from Story 1-3).
+  - `setAvailability_returns403WhenAdminHeaderMissing` (AC-2) — asserts 403 with
+    `$.code == "NOT_ADMIN"` and `$.message` non-empty; `verifyNoInteractions(menuService)`
+    confirms the admin gate short-circuits.
+  - `setAvailability_returns404WhenUnknown` (AC-3) — mocks service to throw
+    `MenuItemNotFoundException`, asserts 404 with both `$.code` and `$.message`.
+- Added imports in `MenuControllerTest`: `anyBoolean`, `verifyNoInteractions`, `patch`
+  (MockMvc builder).
+- `mvnw.cmd test`: **44 tests, 0 failures, 0 errors** (41 prior + 3 new). All ACs satisfied;
+  no regressions.
 
 ### File List
 
-_(to be filled by Dev agent)_
+- `src/main/java/ch/elca/training/lunch/menu/UpdateAvailabilityRequest.java` (new — DTO record)
+- `src/main/java/ch/elca/training/lunch/menu/MenuService.java` (modified — added `setAvailability`)
+- `src/main/java/ch/elca/training/lunch/menu/MenuController.java` (modified — added
+  `PATCH /{id}/availability` endpoint, imported `PatchMapping`)
+- `src/test/java/ch/elca/training/lunch/menu/MenuControllerTest.java` (modified — added 3
+  controller tests, imported `anyBoolean`, `verifyNoInteractions`, `patch`)

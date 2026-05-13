@@ -30,4 +30,11 @@ public class MenuService {
         item.setAvailable(true);
         return menuRepository.save(item);
     }
+
+    public MenuItem setAvailability(UUID id, boolean available) {
+        MenuItem item = menuRepository.findById(id)
+                .orElseThrow(() -> new MenuItemNotFoundException(id));
+        item.setAvailable(available);
+        return menuRepository.save(item);
+    }
 }

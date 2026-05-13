@@ -17,11 +17,14 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -193,5 +196,62 @@ class MenuControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"\",\"priceChf\":10.00}"))
                 .andExpect(status().isBadRequest()); // @Valid fires before method body
+    }
+
+    // --- STORY-2-2: PATCH /{id}/availability tests ---
+
+    @Test
+    void setAvailability_returnsOkAndUpdatesItem() throws Exception {
+        UUID itemId = UUID.randomUUID();
+        MenuItem updated = new MenuItem("Soupe du jour", new BigDecimal("8.50"), false);
+        updated.setId(itemId);
+
+        when(menuService.setAvailability(eq(itemId), eq(false))).thenReturn(updated);
+
+        mockMvc.perform(patch("/api/v1/menu/{id}/availability", itemId)
+                        .header("X-Admin", "true")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"available\":false}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(itemId.toString()))
+                .andExpect(jsonPath("$.name").value("Soupe du jour"))
+                .andExpect(jsonPath("$.priceChf").value(8.50))
+                .andExpect(jsonPath("$.available").value(false));
+
+        ArgumentCaptor<UUID> idCaptor = ArgumentCaptor.forClass(UUID.class);
+        ArgumentCaptor<Boolean> availableCaptor = ArgumentCaptor.forClass(Boolean.class);
+        verify(menuService).setAvailability(idCaptor.capture(), availableCaptor.capture());
+        assertThat(idCaptor.getValue()).isEqualTo(itemId);
+        assertThat(availableCaptor.getValue()).isFalse();
+    }
+
+    @Test
+    void setAvailability_returns403WhenAdminHeaderMissing() throws Exception {
+        UUID itemId = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/v1/menu/{id}/availability", itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"available\":false}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("NOT_ADMIN"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+
+        verifyNoInteractions(menuService);
+    }
+
+    @Test
+    void setAvailability_returns404WhenUnknown() throws Exception {
+        UUID unknownId = UUID.randomUUID();
+
+        when(menuService.setAvailability(eq(unknownId), anyBoolean()))
+                .thenThrow(new MenuItemNotFoundException(unknownId));
+
+        mockMvc.perform(patch("/api/v1/menu/{id}/availability", unknownId)
+                        .header("X-Admin", "true")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"available\":true}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("MENU_ITEM_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 }

@@ -49,6 +49,6 @@ development_status:
   epic-1-retrospective: optional
   epic-2: in-progress
   2-1-frontend-v1: backlog
-  2-2-toggle-menu-availability: ready-for-dev
+  2-2-toggle-menu-availability: review
   2-7-get-menu-item-by-id: review
   epic-2-retrospective: optional

@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,5 +48,16 @@ public class MenuController {
         }
         MenuItem saved = menuService.addItem(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @PatchMapping("/{id}/availability")
+    public MenuItem setAvailability(
+            @RequestHeader(value = "X-Admin", required = false) String adminHeader,
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateAvailabilityRequest req) {
+        if (!"true".equals(adminHeader)) {
+            throw new NotAdminException();
+        }
+        return menuService.setAvailability(id, req.available());
     }
 }
