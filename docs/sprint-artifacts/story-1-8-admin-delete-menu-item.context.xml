@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ELCAi story context companion for story-1-8-admin-delete-menu-item.md
+  Purpose: give the Dev agent everything it needs to implement without re-reading the whole repo.
+  Author: Mary (Business Analyst) - ELCAi analyst workflow.
+-->
+<storyContext id="1.8" name="admin-delete-menu-item" security="ELCA">
+
+  <metadata>
+    <epic>1</epic>
+    <story>8</story>
+    <cp>2</cp>
+    <status>ready-for-dev</status>
+    <baseBranch>main</baseBranch>
+    <jira note="workshop repo — no Jira integration">N/A</jira>
+    <communicationLanguage>English</communicationLanguage>
+  </metadata>
+
+  <problem>
+    Admins need a way to hard-delete obsolete menu items while preserving order history.
+    Current admin surface (Story 1.5 add, Story 1.2.2 availability toggle) offers no removal.
+    Because Order.menuItemId is a FK to MenuItem.id, an unconditional delete would either break
+    referential integrity or destroy history — neither is acceptable.
+  </problem>
+
+  <policy>
+    <rule id="P1">Hard delete permitted only when zero Orders reference the MenuItem.</rule>
+    <rule id="P2">Any referencing Order (any OrderStatus, including CANCELLED) blocks the delete with 409.</rule>
+    <rule id="P3">Admin auth uses inline X-Admin header check — no filter / no @PreAuthorize.</rule>
+    <rule id="P4">No DTOs — entity = API, per v1 tech-spec decision.</rule>
+  </policy>
+
+  <ubiquitousLanguage>
+    <term name="MenuItem">Entity in ch.elca.training.lunch.menu (id, name, priceChf, available).</term>
+    <term name="Order">Entity in ch.elca.training.lunch.order referencing MenuItem via menuItemId (FK).</term>
+    <term name="Admin request">HTTP request carrying header X-Admin: true.</term>
+    <term name="Referencing order">Order row whose menuItemId equals target MenuItem.id, any OrderStatus.</term>
+  </ubiquitousLanguage>
+
+  <acceptanceCriteria>
+    <criterion id="8.1.1" status="204">
+      Existing item + zero referencing orders + admin request => 204 No Content, empty body,
+      subsequent GET /api/v1/menu/{id} returns 404.
+    </criterion>
+    <criterion id="8.1.2" status="404">
+      Unknown id + admin request => 404 with body {code:MENU_ITEM_NOT_FOUND, message:non-empty}.
+      Reuse existing MenuItemNotFoundException + GlobalExceptionHandler mapping (from Story 1.7).
+    </criterion>
+    <criterion id="8.1.3" status="409">
+      Existing item + at least one referencing order (any OrderStatus) + admin request
+      => 409 with body {code:MENU_ITEM_HAS_ORDERS, message:non-empty}. Item NOT deleted.
+    </criterion>
+    <criterion id="8.1.4" status="403">
+      X-Admin header absent OR value != "true" => 403 with same error shape used by
+      POST /api/v1/menu/items (Story 1.5).
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifactsToReuse>
+    <file path="src/main/java/ch/elca/training/lunch/menu/MenuController.java"
+          reason="Pattern for inline X-Admin header check on addItem endpoint"/>
+    <file path="src/main/java/ch/elca/training/lunch/menu/MenuItemNotFoundException.java"
+          reason="Reuse for AC 8.1.2 (404 branch)"/>
+    <file path="src/main/java/ch/elca/training/lunch/common/GlobalExceptionHandler.java"
+          reason="Add new @ExceptionHandler for MenuItemHasOrdersException; existing NotFound mapping stays"/>
+    <file path="src/main/java/ch/elca/training/lunch/common/ApiError.java"
+          reason="Error response DTO — reuse as-is"/>
+    <file path="src/main/java/ch/elca/training/lunch/order/OrderRepository.java"
+          reason="Add derived query: boolean existsByMenuItemId(UUID menuItemId)"/>
+    <file path="src/main/java/ch/elca/training/lunch/menu/MenuService.java"
+          reason="Add method: void deleteById(UUID id)"/>
+  </artifactsToReuse>
+
+  <artifactsToCreate>
+    <file path="src/main/java/ch/elca/training/lunch/menu/MenuItemHasOrdersException.java"
+          reason="Thrown by MenuService.deleteById when referencing orders exist"
+          messageTemplate="Menu item %s cannot be deleted because orders reference it"/>
+  </artifactsToCreate>
+
+  <implementationOutline>
+    <step n="1">Add MenuItemHasOrdersException(UUID id) mirroring MenuItemNotFoundException's shape.</step>
+    <step n="2">Add existsByMenuItemId(UUID) derived query on OrderRepository.</step>
+    <step n="3">Add MenuService.deleteById(UUID id):
+      findById.orElseThrow(MenuItemNotFoundException::new);
+      if existsByMenuItemId then throw MenuItemHasOrdersException;
+      else menuRepository.delete(item).</step>
+    <step n="4">Add @DeleteMapping("/items/{id}") on MenuController — inline X-Admin check matching addItem.</step>
+    <step n="5">Add @ExceptionHandler(MenuItemHasOrdersException.class) in GlobalExceptionHandler
+      returning HTTP 409 + ApiError("MENU_ITEM_HAS_ORDERS", ex.getMessage()).</step>
+  </implementationOutline>
+
+  <testScaffolding>
+    <test type="WebMvcTest"
+          location="src/test/java/ch/elca/training/lunch/menu/MenuControllerTest.java"
+          strategy="add cases to existing test class OR create MenuControllerDeleteTest">
+      <case id="tc1" ac="8.1.1">Happy path — 204, item removed from DB</case>
+      <case id="tc2" ac="8.1.2">404 unknown id — asserts $.code and $.message</case>
+      <case id="tc3" ac="8.1.3">409 with referencing order — asserts $.code, item still present</case>
+      <case id="tc4" ac="8.1.4">403 without X-Admin: true header</case>
+    </test>
+    <test type="ServiceUnitTest"
+          location="src/test/java/ch/elca/training/lunch/menu/MenuServiceTest.java"
+          strategy="mock MenuRepository and OrderRepository">
+      <case id="s1" ac="8.1.1">deleteById calls menuRepository.delete when no orders</case>
+      <case id="s2" ac="8.1.2">deleteById throws MenuItemNotFoundException for unknown id</case>
+      <case id="s3" ac="8.1.3">deleteById throws MenuItemHasOrdersException when existsByMenuItemId=true</case>
+    </test>
+    <test type="DataJpaTest"
+          location="src/test/java/ch/elca/training/lunch/order/OrderRepositoryTest.java">
+      <case id="r1">existsByMenuItemId returns true when at least one Order exists (any status)</case>
+      <case id="r2">existsByMenuItemId returns false when no Order references the id</case>
+    </test>
+  </testScaffolding>
+
+  <definitionOfDone>
+    <item>All ACs (8.1.1 – 8.1.4) ticked</item>
+    <item>Controller, service, repository tests cover the four branches</item>
+    <item>.\mvnw test green (existing tests still pass)</item>
+    <item>Manual smoke: .\mvnw spring-boot:run + curl DELETE returns 204 for a seeded item</item>
+    <item>PR opened against main</item>
+    <item>No SonarQube S1192 / S2699 violations in new code</item>
+  </definitionOfDone>
+
+  <sonarQubeGuardrails>
+    <rule id="S1192" note="Duplicate string literals — extract error codes/messages to constants if reused"/>
+    <rule id="S2699" note="Every new test must contain at least one assertion"/>
+    <rule id="Specific catch" note="Never catch Exception/Throwable — throw and let GlobalExceptionHandler map"/>
+  </sonarQubeGuardrails>
+
+  <deviationsFromELCAi>
+    <deviation>No Jira ticket / no Analyzed transition — workshop repo does not use Jira.</deviation>
+    <deviation>No sprint-status.yaml bootstrap — orphan artefact without a board.</deviation>
+    <deviation>No tech-spec-epic-1.md — flat docs/tech-spec.md covers all epics.</deviation>
+    <deviation>Base branch is main, not develop — workshop is trunk-based.</deviation>
+  </deviationsFromELCAi>
+
+</storyContext>

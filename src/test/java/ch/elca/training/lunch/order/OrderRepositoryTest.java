@@ -64,6 +64,45 @@ class OrderRepositoryTest {
         assertThat(result).isEmpty();
     }
 
+    // --- STORY-1.8: existsByMenuItemId tests ---
+
+    @Test
+    void existsByMenuItemId_returnsTrueWhenAtLeastOneOrderReferencesTheItem() {
+        UUID menuItemId = UUID.randomUUID();
+
+        Order order = buildOrder("emp1", Instant.now(), OrderStatus.SUBMITTED);
+        order.setMenuItemId(menuItemId);
+        entityManager.persist(order);
+        entityManager.flush();
+
+        assertThat(orderRepository.existsByMenuItemId(menuItemId)).isTrue();
+    }
+
+    @Test
+    void existsByMenuItemId_returnsTrueEvenWhenReferencingOrderIsCancelled() {
+        UUID menuItemId = UUID.randomUUID();
+
+        Order order = buildOrder("emp1", Instant.now(), OrderStatus.CANCELLED);
+        order.setMenuItemId(menuItemId);
+        entityManager.persist(order);
+        entityManager.flush();
+
+        assertThat(orderRepository.existsByMenuItemId(menuItemId)).isTrue();
+    }
+
+    @Test
+    void existsByMenuItemId_returnsFalseWhenNoOrdersReferenceTheItem() {
+        UUID unreferencedMenuItemId = UUID.randomUUID();
+        UUID referencedMenuItemId = UUID.randomUUID();
+
+        Order order = buildOrder("emp1", Instant.now(), OrderStatus.SUBMITTED);
+        order.setMenuItemId(referencedMenuItemId);
+        entityManager.persist(order);
+        entityManager.flush();
+
+        assertThat(orderRepository.existsByMenuItemId(unreferencedMenuItemId)).isFalse();
+    }
+
     @Test
     void findAllByUserIdOrderByCreatedAtDesc_doesNotLeakOtherUsersOrders() {
         Instant t1 = Instant.parse("2026-05-11T10:00:00Z");

@@ -1,5 +1,6 @@
 package ch.elca.training.lunch.common;
 
+import ch.elca.training.lunch.menu.MenuItemHasOrdersException;
 import ch.elca.training.lunch.menu.MenuItemNotFoundException;
 import ch.elca.training.lunch.menu.NotAdminException;
 import ch.elca.training.lunch.order.AlreadyCancelledException;
@@ -55,6 +56,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleMenuItemNotFound(MenuItemNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ApiError("MENU_ITEM_NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(MenuItemHasOrdersException.class)
+    public ResponseEntity<ApiError> handleMenuItemHasOrders(MenuItemHasOrdersException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiError("MENU_ITEM_HAS_ORDERS", ex.getMessage()));
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
