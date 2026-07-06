@@ -8,4 +8,6 @@ import java.util.UUID;
 public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findAllByUserIdOrderByCreatedAtDesc(String userId);
+
+    boolean existsByMenuItemId(UUID menuItemId);
 }

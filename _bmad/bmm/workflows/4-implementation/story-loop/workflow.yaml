@@ -1,0 +1,33 @@
+name: story-loop
+description: 'Autonomous dev to QA to review loop from story-ready to PR-ready. Collects a single preflight approval batch, then runs unattended for up to 3 iterations before opening a PR against develop.'
+
+# Critical variables from config
+config_source: "{project-root}/_bmad/bmm/config.yaml"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+user_skill_level: "{config_source}:user_skill_level"
+document_output_language: "{config_source}:document_output_language"
+date: system-generated
+
+# Workflow components
+installed_path: "{project-root}/_bmad/bmm/workflows/4-implementation/story-loop"
+instructions: "{installed_path}/instructions.xml"
+validation: "{installed_path}/checklist.md"
+template: false
+
+# Sub-workflows this loop orchestrates (load and execute their instructions inline)
+dev_story_workflow: "{project-root}/_bmad/bmm/workflows/4-implementation/dev-story/instructions.xml"
+qa_e2e_workflow: "{project-root}/_bmad/bmm/workflows/qa-generate-e2e-tests/instructions.md"
+code_review_workflow: "{project-root}/_bmad/bmm/workflows/4-implementation/code-review/instructions.xml"
+create_story_workflow: "{project-root}/_bmad/bmm/workflows/4-implementation/create-story/instructions.xml"
+
+# Sprint / project artifacts
+planning_artifacts: "{config_source}:planning_artifacts"
+implementation_artifacts: "{config_source}:implementation_artifacts"
+sprint_status: "{implementation_artifacts}/sprint-status.yaml"
+project_context: "**/project-context.md"
+
+# Loop configuration
+max_iterations: 3
+target_branch: "main"
+review_threshold: "clean"  # "clean": iterate on any finding incl. nits; "blockers-only": ship if only nits remain

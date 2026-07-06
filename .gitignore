@@ -18,8 +18,24 @@ out/
 .DS_Store
 Thumbs.db
 
-.claude/
-_bmad/
+# .claude — mostly per-user, but the story-loop slash-command shim ships with the repo
+.claude/*
+!.claude/commands/
+.claude/commands/*
+!.claude/commands/bmad-bmm-story-loop.md
+
+# _bmad — installer output, mostly per-user, but the story-loop workflow ships with the repo
+_bmad/*
+!_bmad/bmm/
+_bmad/bmm/*
+!_bmad/bmm/module-help.csv
+!_bmad/bmm/workflows/
+_bmad/bmm/workflows/*
+!_bmad/bmm/workflows/4-implementation/
+_bmad/bmm/workflows/4-implementation/*
+!_bmad/bmm/workflows/4-implementation/story-loop/
+!_bmad/bmm/workflows/4-implementation/story-loop/**
+
 .mcp.json
 
 # Frontend (STORY-6 Epic 2)

@@ -1,0 +1,223 @@
+<workflow>
+  <critical>The workflow execution engine is governed by: {project-root}/_bmad/core/tasks/workflow.xml</critical>
+  <critical>You MUST have already loaded and processed: {installed_path}/workflow.yaml</critical>
+  <critical>Communicate all responses in {communication_language} and language MUST be tailored to {user_skill_level}</critical>
+  <critical>Generate all documents in {document_output_language}</critical>
+  <critical>This workflow orchestrates dev-story, qa-generate-e2e-tests, and code-review as sub-workflows. When invoking a sub-workflow, load its instructions file and execute EVERY step to completion, then return control here.</critical>
+  <critical>After Step 2 (preflight approval), the loop MUST run autonomously through Steps 3-4. Do NOT ask the user any further question until Step 5 (report) or Step 6 (PR opened), UNLESS a HALT condition triggers because an operation outside the pre-approved batch is required.</critical>
+  <critical>Human gates are exactly two: story-ready (Step 2) and merge-ready (post-Step 6). Everything between is autonomous.</critical>
+
+  <step n="1" goal="Determine input source and produce a dev-ready story" tag="input">
+    <output>Story Loop — Step 1 of 6
+
+      Choose the input source for this loop:
+
+      **[1] Story file** — I already have a story markdown ready for dev (e.g. `implementation_artifacts/1-2-user-auth.md`)
+      **[2] Jira issue** — Fetch a Jira ticket and generate a story from it
+      **[3] Free-form prompt** — Describe the feature; I will generate the story
+      **[4] Sprint next** — Take the next `ready-for-dev` story from {{sprint_status}}
+    </output>
+    <ask>Choose option [1], [2], [3], or [4]:</ask>
+
+    <check if="user chooses '1'">
+      <ask>Provide the full path to the story file:</ask>
+      <action>Store user-provided story path as {{story_path}}</action>
+      <action>Read COMPLETE story file to confirm it exists and has a Status of ready-for-dev</action>
+      <check if="status is not ready-for-dev">
+        <ask>Story status is not "ready-for-dev". Continue anyway? [y/n]:</ask>
+        <check if="user answers 'n'"><action>HALT — user aborted</action></check>
+      </check>
+    </check>
+
+    <check if="user chooses '2'">
+      <ask>Provide the Jira issue key (e.g. C2N-141):</ask>
+      <action>Call MCP tool `mcp__atlassian__jira_get_issue` with the key to fetch summary, description, acceptance criteria</action>
+      <action>Load and execute {{create_story_workflow}} with the Jira context as input to produce a story file</action>
+      <action>Store the resulting story path as {{story_path}}</action>
+    </check>
+
+    <check if="user chooses '3'">
+      <ask>Describe the feature (single paragraph or bullet list):</ask>
+      <action>Load and execute {{create_story_workflow}} with the user's description as input to produce a story file</action>
+      <action>Store the resulting story path as {{story_path}}</action>
+    </check>
+
+    <check if="user chooses '4'">
+      <action>Read {{sprint_status}} and find the first story with status `ready-for-dev`</action>
+      <action>Store that story's file path as {{story_path}}</action>
+      <check if="no ready-for-dev story found">
+        <output>No ready-for-dev story in {{sprint_status}}. Choose option 1, 2, or 3 instead.</output>
+        <goto anchor="input_prompt" />
+      </check>
+    </check>
+
+    <anchor id="input_prompt" />
+    <action>Confirm {{story_path}} is set; abort with an error message if not</action>
+  </step>
+
+  <step n="2" goal="Enumerate and collect a single preflight approval batch" tag="preflight">
+    <critical>This is the ONLY human gate inside the loop. After the user approves the batch, Steps 3-4 run autonomously.</critical>
+
+    <action>Inspect {{story_path}} and the project structure to predict which actions the loop will need. Build the approval list in TWO layers:
+
+      **Layer A — Command categories (default view):**
+      - Run test / build commands (mvn, npm, gradle, pytest — whatever the project uses)
+      - Read/Write/Edit files under the project source and test trees
+      - Run `git` commands (add, commit, push -u origin HEAD)
+      - Run `gh pr create --base {{target_branch}}` to open the PR
+      - Call MCP tools required for the story (e.g. Jira for context, if relevant)
+
+      **Layer B — Exact commands with args (drill-down):**
+      For each category, list the concrete commands you expect to run based on the story. Example:
+      - `mvn -pl webapp-backend verify`
+      - `git push -u origin feature/C2N-141-fix-page-size`
+      - `gh pr create --base develop --title "…" --body-file .pr-body.md`
+      - Files that will be created or modified (predicted from story tasks)
+    </action>
+
+    <output>Story Loop — Step 2 of 6: Preflight approval
+
+      Loop configuration:
+      - Story: {{story_path}}
+      - Max iterations: {max_iterations}
+      - Target branch: {target_branch}
+      - Review threshold: {review_threshold} (iterate on any finding, including nits)
+
+      Actions the loop plans to take (category view):
+
+      {{approval_categories}}
+
+      **[a] Approve all** and run autonomously through Steps 3-4
+      **[d] Show detailed commands** for each category before deciding
+      **[m] Modify** — remove specific categories from approval
+      **[c] Cancel** the loop
+    </output>
+    <ask>Choose [a], [d], [m], or [c]:</ask>
+
+    <check if="user chooses 'd'">
+      <output>Detailed command list:
+
+        {{approval_details}}
+      </output>
+      <ask>Now choose [a] approve, [m] modify, or [c] cancel:</ask>
+    </check>
+
+    <check if="user chooses 'm'">
+      <ask>Which categories should be excluded? (comma-separated numbers or names)</ask>
+      <action>Remove excluded categories from the approval set. Note: if the loop later needs an excluded operation, it will HALT and ask.</action>
+      <ask>Confirm reduced approval set [a] or cancel [c]:</ask>
+    </check>
+
+    <check if="user chooses 'c'">
+      <output>Loop cancelled.</output>
+      <action>HALT</action>
+    </check>
+
+    <check if="user chooses 'a'">
+      <action>Store the approved category set as {{approved_actions}} for the rest of the run</action>
+      <action>Set {{iteration}} = 0</action>
+      <action>Set {{prior_failures}} = "" (empty context; will accumulate across iterations)</action>
+      <output>Preflight approved. Starting autonomous loop.</output>
+    </check>
+  </step>
+
+  <step n="3" goal="Autonomous iteration: dev, QA, review" tag="loop">
+    <critical>Do NOT prompt the user during this step. If an operation outside {{approved_actions}} is needed, HALT with a clear message stating what extra approval is required and resume-from-here instructions.</critical>
+
+    <anchor id="iter_start" />
+    <action>Increment {{iteration}} by 1</action>
+    <output>--- Iteration {{iteration}} of {max_iterations} ---</output>
+
+    <!-- 3a: Dev -->
+    <output>[dev] Invoking dev-story on {{story_path}}</output>
+    <action>Load and execute {{dev_story_workflow}} to completion with {{story_path}} as input. If {{prior_failures}} is non-empty, prepend it as context so the dev agent addresses the previous iteration's failures.</action>
+
+    <!-- 3b: QA -->
+    <output>[qa] Invoking qa-generate-e2e-tests</output>
+    <action>Load and execute {{qa_e2e_workflow}} to completion, targeting the code changes from step 3a</action>
+    <action>Run the generated + existing test suite (use the project's test command; typically `mvn verify` for Java, `npm test` for JS/TS, `pytest` for Python)</action>
+    <action>Capture test results as {{test_results}}</action>
+
+    <check if="{{test_results}} contains failures">
+      <action>Append test failure summary to {{prior_failures}}, tagged as "Iteration {{iteration}} test failures:"</action>
+      <output>[qa] {{iteration}}: FAILED — {{test_failure_count}} failures. Feeding back to dev.</output>
+      <goto anchor="iter_end" />
+    </check>
+
+    <!-- 3c: Code review -->
+    <output>[review] Invoking code-review</output>
+    <action>Load and execute {{code_review_workflow}} to completion on the changes from step 3a</action>
+    <action>Capture review findings as {{review_findings}}, categorized as `blocker`, `major`, `minor`, `nit`</action>
+
+    <check if="{{review_findings}} is empty">
+      <output>[review] {{iteration}}: CLEAN — proceeding to PR.</output>
+      <action>Set {{loop_result}} = "clean"</action>
+      <goto anchor="post_loop" />
+    </check>
+
+    <check if="{{review_findings}} contains any finding (given review_threshold = clean)">
+      <action>Append review findings to {{prior_failures}}, tagged as "Iteration {{iteration}} review findings:"</action>
+      <output>[review] {{iteration}}: {{review_finding_count}} findings ({{blocker_count}} blocker, {{major_count}} major, {{minor_count}} minor, {{nit_count}} nit). Feeding back to dev.</output>
+      <goto anchor="iter_end" />
+    </check>
+
+    <anchor id="iter_end" />
+    <check if="{{iteration}} &lt; {max_iterations}">
+      <goto anchor="iter_start" />
+    </check>
+
+    <!-- Fell out of the loop without convergence -->
+    <action>Set {{loop_result}} = "exhausted"</action>
+  </step>
+
+  <anchor id="post_loop" />
+
+  <step n="4" goal="Handle loop outcome" tag="outcome">
+    <check if="{{loop_result}} == 'exhausted'">
+      <output>Story Loop — HALT: {max_iterations} iterations reached without convergence.
+
+        Accumulated feedback across iterations:
+
+        {{prior_failures}}
+
+        Recommended next steps:
+        1. Review the current branch's state (`git status`, `git diff`)
+        2. Address the residual findings manually
+        3. Re-run this workflow with the same story, or `bmad-bmm-correct-course` if the story itself needs revision
+      </output>
+      <action>HALT — user intervention required</action>
+    </check>
+  </step>
+
+  <step n="5" goal="Ship: push branch and open PR" tag="ship">
+    <critical>Only reached when {{loop_result}} == 'clean'</critical>
+
+    <action>Determine current branch name via `git rev-parse --abbrev-ref HEAD`</action>
+    <action>Compose PR title from the story title/key</action>
+    <action>Compose PR body containing:
+      - Link to the story file
+      - Summary of changes (from Dev Agent Record in the story)
+      - Test summary from qa-generate-e2e-tests
+      - Code review outcome
+      - Iteration count
+    </action>
+    <action>Run `git push -u origin HEAD`</action>
+    <action>Run `gh pr create --base {target_branch} --title "..." --body-file ...`</action>
+    <action>Capture the PR URL from the gh output</action>
+
+    <output>Story Loop — DONE (converged in {{iteration}} iteration(s))
+
+      Pull request opened against `{target_branch}`:
+      {{pr_url}}
+
+      Human gate: merge-ready. Review the PR, request changes if needed (which you can feed back by re-running this workflow), or merge.
+    </output>
+  </step>
+
+  <step n="6" goal="Update sprint status" tag="cleanup">
+    <check if="{{sprint_status}} file exists and story has a matching key">
+      <action>Update the story's status in {{sprint_status}} to `ready-for-review`</action>
+    </check>
+    <action>Workflow complete</action>
+  </step>
+</workflow>
