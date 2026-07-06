@@ -27,6 +27,8 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 
 ## Acceptance Criteria
 
+> **⚠️ Execution order — do AC 2.1.10 first.** The design step is a prerequisite for every other AC: AC 2.1.1 through AC 2.1.9 are refinements of the design captured in `DESIGN.md`. Numeric IDs are kept stable (they are referenced by `story-2-1-frontend-v1.context.xml`) but the *execution order* starts with 2.1.10, not 2.1.1.
+
 - [ ] **AC 2.1.1** — `frontend/` directory scaffolded at repo root via `npm create vite@latest frontend -- --template react-ts` (defaults accepted).
 - [ ] **AC 2.1.2** — `cd frontend && npm install && npm run dev` boots the Vite dev server on port **5173** with zero errors.
 - [ ] **AC 2.1.3** — **Menu view (`/`)** lists today's menu from `GET /api/v1/menu`; each item displays `name`, `priceChf` formatted as CHF, and an "available" indicator.
@@ -87,6 +89,7 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 ## Definition of Done
 
 - [ ] All ACs (2.1.1 – 2.1.10) ticked
+- [ ] PR description references the `frontend-design` skill session that produced `DESIGN.md` (name the skill, and paste one representative excerpt or screenshot — makes the tool-use reviewable, not just the artefact)
 - [ ] `cd frontend && npm run build` succeeds (production bundle generates without errors)
 - [ ] `cd frontend && npm run lint` passes (Vite `react-ts` template ESLint config, no rules disabled)
 - [ ] ≥1 Vitest + `@testing-library/react` component test passes

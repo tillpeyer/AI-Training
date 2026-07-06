@@ -116,6 +116,7 @@
 
   <definitionOfDone>
     <item>All ACs (2.1.1 – 2.1.10) ticked</item>
+    <item>PR description references the frontend-design skill session that produced DESIGN.md (name the skill and paste one representative excerpt or screenshot; makes the tool-use reviewable, not just the artefact)</item>
     <item>npm run build succeeds</item>
     <item>npm run lint passes</item>
     <item>≥1 Vitest component test passes</item>
