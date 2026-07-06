@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ELCAi story context companion for story-2-1-frontend-v1.md
+  Purpose: give the Dev agent everything it needs to implement the frontend without re-reading the whole repo.
+  Author: ELCAi analyst workflow.
+-->
+<storyContext id="2.1" name="frontend-v1" security="ELCA">
+
+  <metadata>
+    <epic>2</epic>
+    <story>1</story>
+    <cp>8</cp>
+    <status>ready-for-dev</status>
+    <baseBranch>main</baseBranch>
+    <jira note="workshop repo — no Jira integration">N/A</jira>
+    <communicationLanguage>English</communicationLanguage>
+    <sizeNote>Large story — SM may split into 4 sub-stories (see story spec, "Sub-story suggestion" section).</sizeNote>
+  </metadata>
+
+  <problem>
+    Epic 1 shipped a headless HTTP API. Employees and admins need a browser interface to consume
+    the same endpoints without touching the backend. This story delivers a minimal React + Vite +
+    TypeScript SPA covering the five backend surfaces already in production.
+  </problem>
+
+  <policy>
+    <rule id="P1">Frontend is decoupled: no changes to pom.xml, Java sources, or application.properties.</rule>
+    <rule id="P2">State management is useState + useEffect only. No Redux / Zustand / TanStack Query.</rule>
+    <rule id="P3">HTTP client is native fetch. No Axios.</rule>
+    <rule id="P4">Routing is react-router-dom. Exactly three routes: /, /orders, /admin.</rule>
+    <rule id="P5">Styling: pick ONE of vanilla CSS, Tailwind, or a small component library. Do not mix.</rule>
+    <rule id="P6">Design captured in frontend/DESIGN.md BEFORE component code is written.</rule>
+    <rule id="P7">X-Admin: true header is sent ONLY for requests fired from the /admin route.</rule>
+    <rule id="P8">X-User-Id header is read from localStorage-persisted "Sign in as" input.</rule>
+    <rule id="P9">Error display shows ApiError.message, never ApiError.code. Non-2xx responses are never silently swallowed.</rule>
+  </policy>
+
+  <ubiquitousLanguage>
+    <term name="SPA">Single-Page Application — one HTML bundle served by Vite dev server (5173) in dev.</term>
+    <term name="View / Route">React component mapped to a URL path via react-router-dom.</term>
+    <term name="Identity header">X-User-Id: &lt;employee-id&gt; — read from a "Sign in as" input persisted to localStorage.</term>
+    <term name="Admin header">X-Admin: true — sent only from the /admin route.</term>
+    <term name="Design doc">frontend/DESIGN.md — one-page wireframes + design decisions, agreed before implementation.</term>
+    <term name="ApiError">Backend error response body: { code: string, message: string }. Frontend displays message.</term>
+  </ubiquitousLanguage>
+
+  <acceptanceCriteria>
+    <criterion id="2.1.1">Scaffold frontend/ via npm create vite@latest frontend -- --template react-ts (defaults accepted).</criterion>
+    <criterion id="2.1.2">cd frontend &amp;&amp; npm install &amp;&amp; npm run dev boots Vite dev server on port 5173, zero errors.</criterion>
+    <criterion id="2.1.3">Menu view (/) lists today's menu from GET /api/v1/menu; each item shows name, priceChf formatted as CHF, and an "available" indicator.</criterion>
+    <criterion id="2.1.4">Order form (on /) picks menu item + quantity (1–10), submits via POST /api/v1/orders with X-User-Id header.</criterion>
+    <criterion id="2.1.5">My orders view (/orders) lists caller's orders from GET /api/v1/orders/me sorted newest first, shows item name, quantity, status, and Cancel button next to each SUBMITTED order.</criterion>
+    <criterion id="2.1.6">Cancel action calls PATCH /api/v1/orders/{id}/cancel, refreshes list, shows brief confirmation on success.</criterion>
+    <criterion id="2.1.7">Admin add-item view (/admin): form for name + priceChf, POSTs to /api/v1/menu/items with X-Admin: true.</criterion>
+    <criterion id="2.1.8">Identity handling: X-User-Id read from "Sign in as" input persisted to localStorage; X-Admin: true sent ONLY from /admin route.</criterion>
+    <criterion id="2.1.9">Error display: renders ApiError.message (never .code) on non-2xx; never silently swallows a non-2xx response.</criterion>
+    <criterion id="2.1.10">frontend/DESIGN.md (one page) summarises agreed wireframes and design decisions BEFORE component code is written.</criterion>
+  </acceptanceCriteria>
+
+  <artifactsToReuse>
+    <endpoint method="GET"    path="/api/v1/menu"                    ac="2.1.3"/>
+    <endpoint method="POST"   path="/api/v1/orders"                  ac="2.1.4" headers="X-User-Id"/>
+    <endpoint method="GET"    path="/api/v1/orders/me"               ac="2.1.5" headers="X-User-Id"/>
+    <endpoint method="PATCH"  path="/api/v1/orders/{id}/cancel"      ac="2.1.6" headers="X-User-Id"/>
+    <endpoint method="POST"   path="/api/v1/menu/items"              ac="2.1.7" headers="X-Admin: true"/>
+    <file path="src/main/java/ch/elca/training/lunch/common/WebConfig.java"
+          reason="Existing CORS config already permits http://localhost:5173 — no backend change needed"/>
+  </artifactsToReuse>
+
+  <artifactsToCreate>
+    <file path="frontend/" reason="Vite scaffold root (created by npm create vite command)"/>
+    <file path="frontend/DESIGN.md" reason="One-page wireframes + design decisions (AC 2.1.10, must exist BEFORE component code)"/>
+    <file path="frontend/src/App.tsx" reason="App shell + react-router-dom setup"/>
+    <file path="frontend/src/routes/MenuPage.tsx" reason="/ route — menu list + order form (AC 2.1.3, 2.1.4)"/>
+    <file path="frontend/src/routes/MyOrdersPage.tsx" reason="/orders route (AC 2.1.5, 2.1.6)"/>
+    <file path="frontend/src/routes/AdminPage.tsx" reason="/admin route (AC 2.1.7)"/>
+    <file path="frontend/src/api/menu.ts" reason="fetch wrapper for /api/v1/menu and /api/v1/menu/items"/>
+    <file path="frontend/src/api/orders.ts" reason="fetch wrapper for /api/v1/orders* endpoints"/>
+    <file path="frontend/src/auth/identity.ts" reason="X-User-Id / X-Admin header handling + localStorage read/write (AC 2.1.8)"/>
+    <file path="frontend/src/components/ErrorBanner.tsx" reason="Renders ApiError.message on non-2xx (AC 2.1.9)"/>
+    <file path="frontend/src/routes/MenuPage.test.tsx" reason="≥1 Vitest + @testing-library/react component test (DoD)"/>
+  </artifactsToCreate>
+
+  <implementationOutline>
+    <step n="1">Design step first: iterate on component breakdown and layout; capture in frontend/DESIGN.md. (AC 2.1.10)</step>
+    <step n="2">Scaffold frontend/ with npm create vite@latest --template react-ts. (AC 2.1.1)</step>
+    <step n="3">Install react-router-dom. Add App.tsx with three routes (/, /orders, /admin).</step>
+    <step n="4">Implement auth/identity.ts — read/write X-User-Id in localStorage; expose helper for /admin route to add X-Admin. (AC 2.1.8)</step>
+    <step n="5">Implement api/menu.ts and api/orders.ts as thin fetch wrappers. Every wrapper throws or returns { data, error } so ErrorBanner can display .message. (AC 2.1.9)</step>
+    <step n="6">Build MenuPage.tsx: menu list + order form. Wire GET /api/v1/menu and POST /api/v1/orders. (AC 2.1.3, 2.1.4)</step>
+    <step n="7">Build MyOrdersPage.tsx: list + Cancel action. Wire GET /api/v1/orders/me and PATCH /api/v1/orders/{id}/cancel. (AC 2.1.5, 2.1.6)</step>
+    <step n="8">Build AdminPage.tsx: name + priceChf form. Wire POST /api/v1/menu/items with X-Admin: true. (AC 2.1.7)</step>
+    <step n="9">Add ErrorBanner and wire it into each page's error state. (AC 2.1.9)</step>
+    <step n="10">Add Vitest config + one component test (MenuPage.test.tsx covering menu list render). (DoD)</step>
+    <step n="11">Verify: npm run dev boots on 5173, npm run build succeeds, npm run lint passes.</step>
+    <step n="12">Manual smoke: backend + Vite up simultaneously; walk through all 10 ACs; capture screenshots for PR.</step>
+  </implementationOutline>
+
+  <testScaffolding>
+    <test type="ComponentTest"
+          location="frontend/src/routes/MenuPage.test.tsx"
+          framework="Vitest + @testing-library/react">
+      <case id="tc1" ac="2.1.3">MenuPage renders items from a mocked GET /api/v1/menu response</case>
+    </test>
+    <test type="Lint" command="npm run lint">
+      <case>Vite react-ts default ESLint config passes on all committed frontend/ code</case>
+    </test>
+    <test type="Build" command="npm run build">
+      <case>Production bundle generates without errors</case>
+    </test>
+    <test type="ManualSmoke" location="human-in-browser">
+      <case>Backend + Vite dev server up simultaneously; walk through all 10 ACs; capture screenshots for PR</case>
+    </test>
+  </testScaffolding>
+
+  <definitionOfDone>
+    <item>All ACs (2.1.1 – 2.1.10) ticked</item>
+    <item>npm run build succeeds</item>
+    <item>npm run lint passes</item>
+    <item>≥1 Vitest component test passes</item>
+    <item>Manual smoke walkthrough with screenshots attached to PR</item>
+    <item>frontend/DESIGN.md exists and reflects agreed wireframes</item>
+    <item>No changes to pom.xml, backend Java sources, or application.properties</item>
+    <item>PR opened against main</item>
+  </definitionOfDone>
+
+  <deviationsFromELCAi>
+    <deviation>No Jira ticket / no Analyzed transition — workshop repo does not use Jira.</deviation>
+    <deviation>No sprint-status.yaml bootstrap — orphan artefact without a board.</deviation>
+    <deviation>No tech-spec-epic-2.md — flat docs/tech-spec.md covers the backend only; frontend is API-consumer.</deviation>
+    <deviation>Base branch is main, not develop — workshop is trunk-based.</deviation>
+    <deviation>SonarQube guardrails not applicable — TypeScript/React project uses ESLint as the analog.</deviation>
+  </deviationsFromELCAi>
+
+</storyContext>
