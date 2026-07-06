@@ -33,6 +33,7 @@
     <rule id="P7">X-Admin: true header is sent ONLY for requests fired from the /admin route.</rule>
     <rule id="P8">X-User-Id header is read from localStorage-persisted "Sign in as" input.</rule>
     <rule id="P9">Error display shows ApiError.message, never ApiError.code. Non-2xx responses are never silently swallowed.</rule>
+    <rule id="P10">Design step (AC 2.1.10) is performed with the Claude Code `frontend-design` skill. The skill proposes layout + component breakdown; participant iterates and commits the agreed outcome to frontend/DESIGN.md BEFORE any component code is written.</rule>
   </policy>
 
   <ubiquitousLanguage>
@@ -82,7 +83,7 @@
   </artifactsToCreate>
 
   <implementationOutline>
-    <step n="1">Design step first: iterate on component breakdown and layout; capture in frontend/DESIGN.md. (AC 2.1.10)</step>
+    <step n="1">Design step first: invoke the Claude Code `frontend-design` skill; iterate on the skill's proposed component breakdown and layout; commit the agreed outcome to frontend/DESIGN.md. Do NOT skip the skill — this is the ELCA-standard entry point. (AC 2.1.10, policy P10)</step>
     <step n="2">Scaffold frontend/ with npm create vite@latest --template react-ts. (AC 2.1.1)</step>
     <step n="3">Install react-router-dom. Add App.tsx with three routes (/, /orders, /admin).</step>
     <step n="4">Implement auth/identity.ts — read/write X-User-Id in localStorage; expose helper for /admin route to add X-Admin. (AC 2.1.8)</step>

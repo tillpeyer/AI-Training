@@ -36,7 +36,7 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 - [ ] **AC 2.1.7** — **Admin add-item view (`/admin`)** provides a form for `name` + `priceChf` and POSTs to `POST /api/v1/menu/items` with `X-Admin: true`.
 - [ ] **AC 2.1.8** — **Identity handling**: `X-User-Id` is read from a "Sign in as" input persisted to `localStorage`; `X-Admin: true` is sent automatically **only** for requests fired from the `/admin` route.
 - [ ] **AC 2.1.9** — **Error display**: when the backend returns `{"code":"...","message":"..."}`, the UI renders `message` (not `code`); no non-2xx response is silently swallowed.
-- [ ] **AC 2.1.10** — **Design captured**: `frontend/DESIGN.md` (one page) summarises the agreed wireframes and design decisions before code is written.
+- [ ] **AC 2.1.10** — **Design captured**: `frontend/DESIGN.md` (one page) summarises the agreed wireframes and design decisions before code is written. The design step is performed with the Claude Code **`frontend-design`** skill; the participant iterates on the skill's proposals until agreement, then commits the outcome to `DESIGN.md`.
 
 ## Design Constraints
 
@@ -47,6 +47,7 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 - **Routing:** `react-router-dom`, exactly three routes (`/`, `/orders`, `/admin`).
 - **Styling:** pick one of vanilla CSS, Tailwind, or a small component library (e.g. shadcn/ui via Radix). Whatever falls out of the design step. Do **not** mix multiple styling systems.
 - **Design first:** capture the layout and component breakdown in `frontend/DESIGN.md` **before** writing any component code.
+- **Design tool:** the design step uses the Claude Code **`frontend-design`** skill. It proposes layout + component structure; the participant iterates and captures the agreed outcome in `DESIGN.md`. Do **not** hand-draft the design without invoking the skill first — the skill is the ELCA-standard entry point for frontend design and its output feeds the rest of the story.
 
 ## Artefacts to Reuse
 
