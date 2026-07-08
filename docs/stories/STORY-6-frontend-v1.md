@@ -14,6 +14,9 @@ Tech-spec section: *§API conventions and §Mock auth still apply — the fronte
 
 ## Acceptance Criteria
 
+> **Do the design step first** — the first AC below is a prerequisite for all the others. All views, routes, and component structures listed after it are refinements of the design captured in `DESIGN.md`.
+
+- [ ] **Design captured** *(prerequisite for everything below)* — the design step is done with the Claude Code **`frontend-design`** skill; `frontend/DESIGN.md` (one page) summarises the agreed wireframes and decisions coming out of the skill session
 - [ ] A new `frontend/` directory at the repo root, scaffolded with React + Vite + TypeScript (`npm create vite@latest frontend -- --template react-ts`)
 - [ ] `cd frontend && npm install && npm run dev` boots the Vite dev server on its default port (5173)
 - [ ] **Menu view (`/`)** — landing page lists today's menu from `GET /api/v1/menu`; each item shows `name`, `priceChf` formatted as CHF, and an "available" indicator
@@ -23,7 +26,6 @@ Tech-spec section: *§API conventions and §Mock auth still apply — the fronte
 - [ ] **Admin add-item view (`/admin`)** — form takes `name` and `priceChf`, posts to `POST /api/v1/menu/items` with `X-Admin: true`
 - [ ] **Identity handling** — `X-User-Id` is read from a small "Sign in as" input that persists to `localStorage`; `X-Admin: true` is sent automatically only for requests fired from the `/admin` route
 - [ ] **Error display** — when the backend returns `{"code":"...","message":"..."}`, the UI shows the `message` (not the code); never silently swallow a non-2xx response
-- [ ] **Design captured** — `frontend/DESIGN.md` (one page) summarises the agreed wireframes and design decisions
 
 ## Technical Notes
 
@@ -31,14 +33,15 @@ Tech-spec section: *§API conventions and §Mock auth still apply — the fronte
 - **Routing**: `react-router-dom` (small, idiomatic). Three routes: `/` (menu + order form), `/orders` (my orders + cancel), `/admin` (add item).
 - **HTTP**: `fetch` is fine — don't pull in Axios unless you actually need it.
 - **State**: `useState` + `useEffect` for fetches. No Redux / Zustand / TanStack Query unless it earns its weight here.
-- **Styling**: pick one before you start — vanilla CSS, Tailwind, or a small component library (e.g. shadcn/ui via Radix). Whatever Claude proposes during the design step.
+- **Styling**: pick one before you start — vanilla CSS, Tailwind, or a small component library (e.g. shadcn/ui via Radix). Whatever the `frontend-design` skill lands on in the design step.
 - **CORS**: already configured on the backend (`ch.elca.training.lunch.common.WebConfig`) to allow `http://localhost:5173` (Vite default) for all methods used by the API. **No backend change needed.** If you prefer a Vite proxy instead, you can still add one in `vite.config.ts`, but it isn't required.
-- **Design first**: agree the layout and component breakdown, capture it in `frontend/DESIGN.md`, then implement.
+- **Design first**: run the Claude Code **`frontend-design`** skill to produce a layout + component breakdown, iterate on its proposals until you're happy, capture the agreed outcome in `frontend/DESIGN.md`, **then** write any component code. Do not hand-draft the design without invoking the skill first.
 
 ## Definition of Done
 
 - [ ] All ACs ticked
 - [ ] `frontend/DESIGN.md` exists and reflects the agreed wireframes
+- [ ] PR description references the `frontend-design` skill session that produced `DESIGN.md` (name the skill, and paste one representative excerpt or screenshot — makes the tool-use reviewable, not just the artefact)
 - [ ] `cd frontend && npm run build` succeeds (production bundle generates without errors)
 - [ ] `cd frontend && npm run lint` passes (Vite's `react-ts` template installs ESLint by default)
 - [ ] At least one component test using Vitest + `@testing-library/react` covers the happy path of one view (menu list rendering is the easiest)
