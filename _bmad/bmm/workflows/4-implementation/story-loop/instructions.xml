@@ -30,8 +30,8 @@
     </check>
 
     <check if="user chooses '2'">
-      <ask>Provide the Jira issue key (e.g. C2N-141):</ask>
-      <action>Call MCP tool `mcp__atlassian__jira_get_issue` with the key to fetch summary, description, acceptance criteria</action>
+      <ask>Provide the Jira issue key (e.g. TRAIN-42):</ask>
+      <action>Call MCP tool `mcp__ELCA-MCP__elca_jira_get_issue` with the key to fetch summary, description, acceptance criteria</action>
       <action>Load and execute {{create_story_workflow}} with the Jira context as input to produce a story file</action>
       <action>Store the resulting story path as {{story_path}}</action>
     </check>
@@ -69,9 +69,9 @@
 
       **Layer B — Exact commands with args (drill-down):**
       For each category, list the concrete commands you expect to run based on the story. Example:
-      - `mvn -pl webapp-backend verify`
-      - `git push -u origin feature/C2N-141-fix-page-size`
-      - `gh pr create --base develop --title "…" --body-file .pr-body.md`
+      - `.\mvnw test` (or `.\mvnw verify` for the full build)
+      - `git push -u origin feature/STORY-1-8-admin-delete-menu-item`
+      - `gh pr create --base main --title "…" --body-file .pr-body.md`
       - Files that will be created or modified (predicted from story tasks)
     </action>
 

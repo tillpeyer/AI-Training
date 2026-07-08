@@ -1,6 +1,6 @@
 ---
 title: 'Story Loop Definition of Done Checklist'
-validation-target: 'End-to-end loop run from story-ready to PR opened against develop'
+validation-target: 'End-to-end loop run from story-ready to PR opened against main'
 validation-criticality: 'HIGH'
 required-inputs:
   - 'Story path resolved (from file, Jira, prompt, or sprint-status)'
@@ -38,7 +38,7 @@ validation-rules:
 ## Shipping (only on convergence)
 
 - [ ] Branch pushed to origin
-- [ ] PR opened against `develop` (per C2N convention) with body containing story link, change summary, test summary, review outcome, iteration count
+- [ ] PR opened against `main` with body containing story link, change summary, test summary, review outcome, iteration count
 - [ ] PR URL surfaced to user
 - [ ] Sprint status updated to `ready-for-review` if applicable
 
