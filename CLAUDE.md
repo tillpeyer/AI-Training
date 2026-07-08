@@ -6,7 +6,7 @@ This file is loaded automatically by Claude Code when working in this repository
 
 **Agentic Engineering — Advanced** workshop starter. A small Spring Boot service ("Lunch Order API") used as the hands-on project in ELCA's Advanced Instructor-Led training (half-day, monthly).
 
-Participants clone this repo, install BMAD + ELCAi, then run **BMAD Phase 4** (Story → Implementation → Test) on one or more of the draft stories in `docs/stories/` (workshop-lite convention) or `docs/sprint-artifacts/` (ELCAi-strict convention, e.g. `story-1-8-admin-delete-menu-item.md`).
+Participants clone this repo, install BMAD + ELCAi, then run **BMAD Phase 4** (Story → Implementation → Test) on one or more of the draft stories in `docs/stories/` (workshop-lite convention) or `_bmad-output/implementation-artifacts/` (ELCAi-strict convention, e.g. `story-1-8-admin-delete-menu-item.md`).
 
 ## Your role as Claude
 
@@ -29,7 +29,7 @@ In order:
 2. `docs/tech-spec.md` — Phase 3 artefact, the "how" (package layout, data model, conventions)
 3. The story you're about to work on. Two conventions coexist in this repo:
    - **Workshop-lite** — `docs/stories/STORY-N-*.md` (STORY-1..7). Flat markdown, `AC-N` format, no companion files.
-   - **ELCAi-strict** — `docs/sprint-artifacts/story-E-S-<slug>.md` plus a companion `.context.xml` with the same stem (e.g. `story-1-8-admin-delete-menu-item.md` + `.context.xml`). Use `AC E.S.N` numbering, CP estimates, and read **both** files before implementing — the `.context.xml` contains the artefacts-to-reuse/create tables, implementation outline, and test scaffolding.
+   - **ELCAi-strict** — `_bmad-output/implementation-artifacts/story-E-S-<slug>.md` plus a companion `.context.xml` with the same stem (e.g. `story-1-8-admin-delete-menu-item.md` + `.context.xml`). Use `AC E.S.N` numbering, CP estimates, and read **both** files before implementing — the `.context.xml` contains the artefacts-to-reuse/create tables, implementation outline, and test scaffolding.
 
 Do **not** invent requirements beyond what's in those files. If a story is ambiguous, ask the participant — don't guess.
 
