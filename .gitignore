@@ -18,23 +18,18 @@ out/
 .DS_Store
 Thumbs.db
 
-# .claude — mostly per-user, but the story-loop slash-command shim ships with the repo
+# .claude — mostly per-user, but the story-loop skill + install command ship with the repo
 .claude/*
 !.claude/commands/
 .claude/commands/*
-!.claude/commands/bmad-bmm-story-loop.md
+!.claude/commands/install-story-loop.md
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/bmad-elcai-story-loop/
+!.claude/skills/bmad-elcai-story-loop/**
 
-# _bmad — installer output, mostly per-user, but the story-loop workflow ships with the repo
-_bmad/*
-!_bmad/bmm/
-_bmad/bmm/*
-!_bmad/bmm/module-help.csv
-!_bmad/bmm/workflows/
-_bmad/bmm/workflows/*
-!_bmad/bmm/workflows/4-implementation/
-_bmad/bmm/workflows/4-implementation/*
-!_bmad/bmm/workflows/4-implementation/story-loop/
-!_bmad/bmm/workflows/4-implementation/story-loop/**
+# _bmad — installer output, per-user; nothing under _bmad ships with the repo in 6.10.x
+_bmad/
 
 .mcp.json
 
