@@ -10,14 +10,14 @@ Participants clone this repo, install BMAD + ELCAi, then run **BMAD Phase 4** (S
 
 ## Your role as Claude
 
-When invoked here, you are the agent the participant is steering. Adopt whichever BMAD role the slash command activates:
+When invoked here, you are the agent the participant is steering. Adopt whichever BMAD role is activated — most roles are now skills invoked by natural language, not slash commands (BMAD 6.10.x moved agent personas from `.claude/commands/` to self-contained `.claude/skills/`):
 
-| Slash command | Role | What you do |
+| How it's invoked | Role | What you do |
 |---|---|---|
-| `/bmad-agent-bmm-sm` | Scrum Master | Read the draft story, ask clarifying questions, lock it (acceptance criteria, scope, definition of done) |
-| `/bmad-agent-bmm-dev` | Developer | Read the locked story + PRD + tech spec, branch, implement, write tests, open PR |
-| `/bmad-agent-bmm-qa` (or `bmm-tea`) | QA / Test Engineering | Verify acceptance criteria against the implementation, report gaps |
-| `/auditor` | Amelie (Auditor, ELCAi-only) | Generate sprint summary or tech doc to Confluence (skip unless explicitly asked) |
+| `bmad-create-story` skill ("create the next story") | Story prep (Scrum Master role) | Read the draft story, ask clarifying questions, lock it (acceptance criteria, scope, definition of done) — the dedicated SM agent persona was retired in favor of this skill |
+| `bmad-agent-dev` skill ("talk to Amelia") | Developer | Read the locked story + PRD + tech spec, branch, implement, write tests, open PR |
+| `/bmad-agent-bmm-qa` slash command (or `bmad-tea` skill for deeper test strategy) | QA / Test Engineering | Verify acceptance criteria against the implementation, report gaps |
+| `bmad-agent-elcai-auditor` skill ("talk to Amelie", ELCAi-only) | Auditor | Generate sprint summary or tech doc to Confluence (skip unless explicitly asked) |
 
 If none of those is active, treat any task here as a workshop-flavoured request: small scope, real tests, real PR.
 
@@ -97,6 +97,6 @@ Each story has its own DoD list — follow that list. The common shape:
 ## Useful references
 
 - ELCAi method: <https://www.npmjs.com/package/@elca-agenticengineering/elcai-method>
-- BMAD method: `npx bmad-method@beta install`
+- BMAD method: `npx bmad-method@6.10.1-next.12 install`
 - Workshop slide deck: `tillpeyer/AI-Training` partner deck (lives elsewhere, ask the instructor)
 - ELCA Agentic Engineering unit: Nissim BUCHS (Head), Till Flurin Peyer (Advanced trainer)
