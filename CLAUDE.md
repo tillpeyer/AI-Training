@@ -86,10 +86,9 @@ Each story has its own DoD list — follow that list. The common shape:
 
 - Don't commit `.claude/`, `_bmad/`, or `.mcp.json` — they're gitignored on purpose.
   **Exceptions** (allowlisted in `.gitignore` so participants get them via `git pull`):
-  - `.claude/skills/bmad-elcai-story-loop/**` — the story-loop skill itself (SKILL.md, checklist.md, customize.toml)
-  - `.claude/skills/install-story-loop/**` — skill to copy the story-loop skill into another BMAD project
-  - `_bmad/custom/config.toml` — team config overrides (e.g. `[modules.elcai]` Jira/Confluence keys); everything else under `_bmad/custom/` (notably `*.user.toml`) stays personal/gitignored
-  - Also gitignored: `.agents/` (BMAD's per-IDE output for github-copilot) and the rest of `_bmad/` (installer output, per-user, nothing else under it ships with the repo)
+  - `.claude/commands/bmad-bmm-story-loop.md` — slash-command shim for the story loop
+  - `_bmad/bmm/workflows/4-implementation/story-loop/**` — the story-loop workflow itself
+  - `_bmad/bmm/module-help.csv` — the module registry that exposes the loop as a skill. **⚠ merge-conflict risk:** re-running `bmad install` will rewrite this file. If it does, diff carefully and re-add the `Story Loop` row.
 - Don't push directly to `main` — always go through a feature branch + PR
 - Don't update `pom.xml` dependencies "to be helpful"
 - Don't generate documentation outside `docs/` unless the story asks for it

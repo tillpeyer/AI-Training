@@ -3,6 +3,7 @@ package ch.elca.training.lunch.menu;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,5 +48,16 @@ public class MenuController {
         }
         MenuItem saved = menuService.addItem(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @DeleteMapping("/items/{id}")
+    public ResponseEntity<Void> delete(
+            @RequestHeader(value = "X-Admin", required = false) String adminHeader,
+            @PathVariable UUID id) {
+        if (!"true".equals(adminHeader)) {
+            throw new NotAdminException();
+        }
+        menuService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
