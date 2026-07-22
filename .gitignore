@@ -18,8 +18,29 @@ out/
 .DS_Store
 Thumbs.db
 
-.claude/
-_bmad/
+# .claude — mostly per-user, but the story-loop skill + install-story-loop skill ship with the repo
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/bmad-elcai-story-loop/
+!.claude/skills/bmad-elcai-story-loop/**
+!.claude/skills/install-story-loop/
+!.claude/skills/install-story-loop/**
+
+# _bmad — installer output, per-user; nothing under _bmad ships with the repo in 6.10.x,
+# except the team config override file (documented as committed in its own header).
+_bmad/*
+!_bmad/custom/
+_bmad/custom/*
+!_bmad/custom/config.toml
+
+# .agents — BMAD's per-IDE skill output for github-copilot; per-user, not shipped
+.agents/
+
+# .github/{agents,prompts,skills} — BMAD + ELCAi's github-copilot IDE output; per-user, not shipped.
+# No real CI workflows live here today; if .github/workflows/ is ever added, allowlist it explicitly.
+.github/
+
 .mcp.json
 
 # Frontend (STORY-6 Epic 2)

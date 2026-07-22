@@ -6,18 +6,18 @@ This file is loaded automatically by Claude Code when working in this repository
 
 **Agentic Engineering — Advanced** workshop starter. A small Spring Boot service ("Lunch Order API") used as the hands-on project in ELCA's Advanced Instructor-Led training (half-day, monthly).
 
-Participants clone this repo, install BMAD + ELCAi, then run **BMAD Phase 4** (Story → Implementation → Test) on one or more of the five draft stories in `docs/stories/`.
+Participants clone this repo, install BMAD + ELCAi, then run **BMAD Phase 4** (Story → Implementation → Test) on one or more of the draft stories in `docs/stories/` (workshop-lite convention) or `_bmad-output/implementation-artifacts/` (ELCAi-strict convention, e.g. `story-1-8-admin-delete-menu-item.md`).
 
 ## Your role as Claude
 
-When invoked here, you are the agent the participant is steering. Adopt whichever BMAD role the slash command activates:
+When invoked here, you are the agent the participant is steering. Adopt whichever BMAD role is activated — most roles are now skills invoked by natural language, not slash commands (BMAD 6.10.x moved agent personas from `.claude/commands/` to self-contained `.claude/skills/`):
 
-| Slash command | Role | What you do |
+| How it's invoked | Role | What you do |
 |---|---|---|
-| `/bmad-agent-bmm-sm` | Scrum Master | Read the draft story, ask clarifying questions, lock it (acceptance criteria, scope, definition of done) |
-| `/bmad-agent-bmm-dev` | Developer | Read the locked story + PRD + tech spec, branch, implement, write tests, open PR |
-| `/bmad-agent-bmm-qa` (or `bmm-tea`) | QA / Test Engineering | Verify acceptance criteria against the implementation, report gaps |
-| `/auditor` | Amelie (Auditor, ELCAi-only) | Generate sprint summary or tech doc to Confluence (skip unless explicitly asked) |
+| `bmad-create-story` skill ("create the next story") | Story prep (Scrum Master role) | Read the draft story, ask clarifying questions, lock it (acceptance criteria, scope, definition of done) — the dedicated SM agent persona was retired in favor of this skill |
+| `bmad-agent-dev` skill ("talk to Amelia") | Developer | Read the locked story + PRD + tech spec, branch, implement, write tests, open PR |
+| `/bmad-agent-bmm-qa` slash command (or `bmad-tea` skill for deeper test strategy) | QA / Test Engineering | Verify acceptance criteria against the implementation, report gaps |
+| `bmad-agent-elcai-auditor` skill ("talk to Amelie", ELCAi-only) | Auditor | Generate sprint summary or tech doc to Confluence (skip unless explicitly asked) |
 
 If none of those is active, treat any task here as a workshop-flavoured request: small scope, real tests, real PR.
 
@@ -27,9 +27,11 @@ In order:
 
 1. `docs/prd.md` — Phase 2 artefact, the "why"
 2. `docs/tech-spec.md` — Phase 3 artefact, the "how" (package layout, data model, conventions)
-3. `docs/stories/STORY-N-*.md` — the story you're about to work on
+3. The story you're about to work on. Two conventions coexist in this repo:
+   - **Workshop-lite** — `docs/stories/STORY-N-*.md` (STORY-1..7). Flat markdown, `AC-N` format, no companion files.
+   - **ELCAi-strict** — `_bmad-output/implementation-artifacts/story-E-S-<slug>.md` plus a companion `.context.xml` with the same stem (e.g. `story-1-8-admin-delete-menu-item.md` + `.context.xml`). Use `AC E.S.N` numbering, CP estimates, and read **both** files before implementing — the `.context.xml` contains the artefacts-to-reuse/create tables, implementation outline, and test scaffolding.
 
-Do **not** invent requirements beyond what's in those three. If a story is ambiguous, ask the participant — don't guess.
+Do **not** invent requirements beyond what's in those files. If a story is ambiguous, ask the participant — don't guess.
 
 ## Conventions
 
@@ -82,7 +84,12 @@ Each story has its own DoD list — follow that list. The common shape:
 
 ## Things you should NOT do
 
-- Don't commit `.claude/`, `_bmad/`, or `.mcp.json` — they're gitignored on purpose
+- Don't commit `.claude/`, `_bmad/`, or `.mcp.json` — they're gitignored on purpose.
+  **Exceptions** (allowlisted in `.gitignore` so participants get them via `git pull`):
+  - `.claude/skills/bmad-elcai-story-loop/**` — the story-loop skill itself (SKILL.md, checklist.md, customize.toml)
+  - `.claude/skills/install-story-loop/**` — skill to copy the story-loop skill into another BMAD project
+  - `_bmad/custom/config.toml` — team config overrides (e.g. `[modules.elcai]` Jira/Confluence keys); everything else under `_bmad/custom/` (notably `*.user.toml`) stays personal/gitignored
+  - Also gitignored: `.agents/` (BMAD's per-IDE output for github-copilot) and the rest of `_bmad/` (installer output, per-user, nothing else under it ships with the repo)
 - Don't push directly to `main` — always go through a feature branch + PR
 - Don't update `pom.xml` dependencies "to be helpful"
 - Don't generate documentation outside `docs/` unless the story asks for it
@@ -91,6 +98,6 @@ Each story has its own DoD list — follow that list. The common shape:
 ## Useful references
 
 - ELCAi method: <https://www.npmjs.com/package/@elca-agenticengineering/elcai-method>
-- BMAD method: `npx bmad-method@beta install`
+- BMAD method: `npx bmad-method@6.10.1-next.12 install`
 - Workshop slide deck: `tillpeyer/AI-Training` partner deck (lives elsewhere, ask the instructor)
 - ELCA Agentic Engineering unit: Nissim BUCHS (Head), Till Flurin Peyer (Advanced trainer)

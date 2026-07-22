@@ -1,0 +1,21 @@
+# Team / enterprise overrides for _bmad/config.toml.
+# Committed to the repo — applies to every developer on the project.
+# Tables deep-merge over base config; keyed entries merge by key.
+# Example: override an agent descriptor, or add a new agent.
+#
+# [agents.bmad-agent-pm]
+# description = "Prefers short, bulleted PRDs over narrative drafts."
+
+# ELCAi module answers. The installer can't resolve _bmad/elcai/module.yaml
+# (known issue — logs "could not locate module.yaml for 'elcai'" on every
+# install/update), so [modules.elcai] never gets written to _bmad/config.toml
+# the way [modules.bmm]/[modules.tea] do. Pinned here manually so the
+# auditor skill's {jira_project_key}/{confluence_project_space} variables
+# resolve to something instead of an empty/literal placeholder.
+[modules.elcai]
+jira_project_key = "RHBGAF"
+confluence_project_space = "LOCAL-ONLY"
+confluence_technical_space = "LOCAL-ONLY"
+# jira_board_id, bitbucket_workspace, bitbucket_repository: no real values
+# exist for this repo (GitHub, not Bitbucket; no live Jira board configured)
+# — left unset rather than fabricated.
