@@ -86,14 +86,8 @@ Each story has its own DoD list — follow that list. The common shape:
 
 - Don't commit `.claude/`, `_bmad/`, or `.mcp.json` — they're gitignored on purpose.
   **Exceptions** (allowlisted in `.gitignore` so participants get them via `git pull`):
-  - `.claude/skills/bmad-elcai-story-loop/**` — the story-loop skill itself (SKILL.md, checklist.md, customize.toml)
-  - `.claude/skills/install-story-loop/**` — skill to copy the story-loop skill into another BMAD project
-  - `.claude/settings.json` + `.claude/hooks/*` — five hooks, all dispatched through `.sh` wrappers for cross-platform use (PowerShell logic runs via `pwsh`, falling back to Windows `powershell.exe`, no-op if neither exists):
-    - `git-safety-guard.{ps1,sh}` (`PreToolUse`) — blocks force-push, direct pushes to `main`, `gh pr merge`, and staging BMAD installer output via `git add`. Strips heredoc bodies before matching so descriptive prose (e.g. a commit message that mentions "`git push --force`") doesn't false-positive as an actual invocation.
-    - `test-failure-nudge.{ps1,sh}` (`PostToolUse`) — after an `mvnw test` run, if the output shows `BUILD FAILURE` or nonzero `Failures`/`Errors`, injects a reminder to re-check the story's Definition of Done before continuing.
-    - `health-check-nudge.{ps1,sh}` (`PostToolUse`) — when `spring-boot:run` is launched backgrounded, polls `/actuator/health` for up to 45s and reports `UP`/not-`UP`/no-response, automating that DoD checklist step. Only fires for backgrounded launches — a foreground run blocks until the process exits, so there's nothing left to check by the time the hook runs.
-    - `session-start-nudge.sh` (`SessionStart`) — nudges every new session to run `check-training-env` first, so environment drift surfaces without anyone remembering to ask.
-    - `notify.sh` (`Notification`) — cross-platform "Claude Code needs your attention" popup + sound (`osascript` on macOS, `notify-send`/`paplay` on Linux, WinForms + `SystemSounds.Asterisk` on Windows).
+  - `.claude/skills/bmad-elcai-story-loop/**` + `.claude/skills/install-story-loop/**` — the story-loop skill and its installer
+  - `.claude/settings.json` + `.claude/hooks/**` — safety and reminder hooks (`git-safety-guard`, `test-failure-nudge`, `health-check-nudge`, `session-start-nudge`, `notify`); each script's own header comment documents what it does
   - `.claude/commands/{elcai-check-env,check-training-env}.md` — read-only diagnostic commands (MCP config, hook wiring, BMAD/ELCAi version drift, gitignore coverage)
   - `_bmad/custom/config.toml` — team config overrides (e.g. `[modules.elcai]` Jira/Confluence keys); everything else under `_bmad/custom/` (notably `*.user.toml`) stays personal/gitignored
   - Also gitignored: `.agents/` (BMAD's per-IDE output for github-copilot) and the rest of `_bmad/` (installer output, per-user, nothing else under it ships with the repo)
