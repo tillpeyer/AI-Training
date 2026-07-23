@@ -18,7 +18,10 @@ out/
 .DS_Store
 Thumbs.db
 
-# .claude — mostly per-user, but the story-loop skill + install-story-loop skill ship with the repo
+# .claude — mostly per-user, but a few pieces ship with the repo:
+# the story-loop skill, install-story-loop skill, the safety-guard +
+# test-failure + session-start + notification hooks (portable, tested on
+# Windows via git-bash), and two read-only env-check commands.
 .claude/*
 !.claude/skills/
 .claude/skills/*
@@ -26,6 +29,21 @@ Thumbs.db
 !.claude/skills/bmad-elcai-story-loop/**
 !.claude/skills/install-story-loop/
 !.claude/skills/install-story-loop/**
+!.claude/hooks/
+.claude/hooks/*
+!.claude/hooks/git-safety-guard.ps1
+!.claude/hooks/git-safety-guard.sh
+!.claude/hooks/test-failure-nudge.ps1
+!.claude/hooks/test-failure-nudge.sh
+!.claude/hooks/health-check-nudge.ps1
+!.claude/hooks/health-check-nudge.sh
+!.claude/hooks/session-start-nudge.sh
+!.claude/hooks/notify.sh
+!.claude/settings.json
+!.claude/commands/
+.claude/commands/*
+!.claude/commands/elcai-check-env.md
+!.claude/commands/check-training-env.md
 
 # _bmad — installer output, per-user; nothing under _bmad ships with the repo in 6.10.x,
 # except the team config override file (documented as committed in its own header).

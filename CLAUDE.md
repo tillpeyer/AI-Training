@@ -76,8 +76,8 @@ If a participant is mid-block and asks you to do something out of scope, push ba
 Each story has its own DoD list — follow that list. The common shape:
 
 - [ ] All ACs ticked
-- [ ] Unit / integration tests covering the ACs pass (`.\mvnw test`)
-- [ ] `.\mvnw spring-boot:run` boots cleanly, `/actuator/health` returns `UP`
+- [ ] Unit / integration tests covering the ACs pass (`.\mvnw test` — a hook auto-flags failures)
+- [ ] `.\mvnw spring-boot:run` boots cleanly, `/actuator/health` returns `UP` (a hook auto-verifies this when run backgrounded)
 - [ ] PR opened against `main`
 
 **Opening the PR:** Run `gh pr create --base main --title "STORY-<n>: <description>"`. If `gh` returns 401 or "not found", open `https://github.com/tillpeyer/AI-Training/compare/feature/STORY-<n>-<slug>?expand=1` in your browser and click "Create pull request".
@@ -86,14 +86,13 @@ Each story has its own DoD list — follow that list. The common shape:
 
 - Don't commit `.claude/`, `_bmad/`, or `.mcp.json` — they're gitignored on purpose.
   **Exceptions** (allowlisted in `.gitignore` so participants get them via `git pull`):
-  - `.claude/skills/bmad-elcai-story-loop/**` — the story-loop skill itself (SKILL.md, checklist.md, customize.toml)
-  - `.claude/skills/install-story-loop/**` — skill to copy the story-loop skill into another BMAD project
+  - `.claude/skills/bmad-elcai-story-loop/**` + `.claude/skills/install-story-loop/**` — the story-loop skill and its installer
+  - `.claude/settings.json` + `.claude/hooks/**` — safety and reminder hooks (`git-safety-guard`, `test-failure-nudge`, `health-check-nudge`, `session-start-nudge`, `notify`); `git-safety-guard` enforces the push-to-main / force-push / `gh pr merge` rules mechanically, so they aren't repeated as prose below. Each script's own header comment documents what it does.
+  - `.claude/commands/{elcai-check-env,check-training-env}.md` — read-only diagnostic commands (MCP config, hook wiring, BMAD/ELCAi version drift, gitignore coverage)
   - `_bmad/custom/config.toml` — team config overrides (e.g. `[modules.elcai]` Jira/Confluence keys); everything else under `_bmad/custom/` (notably `*.user.toml`) stays personal/gitignored
   - Also gitignored: `.agents/` (BMAD's per-IDE output for github-copilot) and the rest of `_bmad/` (installer output, per-user, nothing else under it ships with the repo)
-- Don't push directly to `main` — always go through a feature branch + PR
 - Don't update `pom.xml` dependencies "to be helpful"
 - Don't generate documentation outside `docs/` unless the story asks for it
-- Don't merge your own PRs — the participant decides
 
 ## Useful references
 
