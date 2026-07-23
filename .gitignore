@@ -20,8 +20,8 @@ Thumbs.db
 
 # .claude — mostly per-user, but a few pieces ship with the repo:
 # the story-loop skill, install-story-loop skill, the safety-guard +
-# notification hooks (portable, tested on Windows via git-bash), and
-# two read-only env-check commands.
+# test-failure + session-start + notification hooks (portable, tested on
+# Windows via git-bash), and two read-only env-check commands.
 .claude/*
 !.claude/skills/
 .claude/skills/*
@@ -33,6 +33,9 @@ Thumbs.db
 .claude/hooks/*
 !.claude/hooks/git-safety-guard.ps1
 !.claude/hooks/git-safety-guard.sh
+!.claude/hooks/test-failure-nudge.ps1
+!.claude/hooks/test-failure-nudge.sh
+!.claude/hooks/session-start-nudge.sh
 !.claude/hooks/notify.sh
 !.claude/settings.json
 !.claude/commands/
