@@ -76,8 +76,8 @@ If a participant is mid-block and asks you to do something out of scope, push ba
 Each story has its own DoD list — follow that list. The common shape:
 
 - [ ] All ACs ticked
-- [ ] Unit / integration tests covering the ACs pass (`.\mvnw test`)
-- [ ] `.\mvnw spring-boot:run` boots cleanly, `/actuator/health` returns `UP`
+- [ ] Unit / integration tests covering the ACs pass (`.\mvnw test` — a hook auto-flags failures)
+- [ ] `.\mvnw spring-boot:run` boots cleanly, `/actuator/health` returns `UP` (a hook auto-verifies this when run backgrounded)
 - [ ] PR opened against `main`
 
 **Opening the PR:** Run `gh pr create --base main --title "STORY-<n>: <description>"`. If `gh` returns 401 or "not found", open `https://github.com/tillpeyer/AI-Training/compare/feature/STORY-<n>-<slug>?expand=1` in your browser and click "Create pull request".
