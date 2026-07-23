@@ -35,6 +35,8 @@ Thumbs.db
 !.claude/hooks/git-safety-guard.sh
 !.claude/hooks/test-failure-nudge.ps1
 !.claude/hooks/test-failure-nudge.sh
+!.claude/hooks/health-check-nudge.ps1
+!.claude/hooks/health-check-nudge.sh
 !.claude/hooks/session-start-nudge.sh
 !.claude/hooks/notify.sh
 !.claude/settings.json

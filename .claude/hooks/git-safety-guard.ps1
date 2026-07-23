@@ -13,7 +13,7 @@ $cmd = [regex]::Replace($rawCmd, $heredocPattern, '<<HEREDOC_STRIPPED>>')
 # 1. Don't let BMAD installer output (.agents/, _bmad/, unshipped .claude/*) get staged.
 if ($cmd -match 'git\s+add' -and $cmd -notmatch '\-\-dry-run') {
     $leaked = git status --porcelain --ignored=no --untracked-files=all -- .agents _bmad .claude 2>$null |
-        Where-Object { $_ -match '^\?\? (\.agents/|_bmad/(?!custom/config\.toml)|\.claude/(?!skills/install-story-loop/|skills/bmad-elcai-story-loop/|hooks/(git-safety-guard\.(ps1|sh)|test-failure-nudge\.(ps1|sh)|session-start-nudge\.sh|notify\.sh)$|settings\.json$|commands/(elcai-check-env|check-training-env)\.md$))' }
+        Where-Object { $_ -match '^\?\? (\.agents/|_bmad/(?!custom/config\.toml)|\.claude/(?!skills/install-story-loop/|skills/bmad-elcai-story-loop/|hooks/(git-safety-guard\.(ps1|sh)|test-failure-nudge\.(ps1|sh)|health-check-nudge\.(ps1|sh)|session-start-nudge\.sh|notify\.sh)$|settings\.json$|commands/(elcai-check-env|check-training-env)\.md$))' }
     if ($leaked) {
         [Console]::Error.WriteLine("Blocked: git add would stage BMAD installer output (.agents/, _bmad/, or unshipped .claude/ paths). Check .gitignore before proceeding.")
         exit 2
