@@ -87,14 +87,12 @@ Each story has its own DoD list — follow that list. The common shape:
 - Don't commit `.claude/`, `_bmad/`, or `.mcp.json` — they're gitignored on purpose.
   **Exceptions** (allowlisted in `.gitignore` so participants get them via `git pull`):
   - `.claude/skills/bmad-elcai-story-loop/**` + `.claude/skills/install-story-loop/**` — the story-loop skill and its installer
-  - `.claude/settings.json` + `.claude/hooks/**` — safety and reminder hooks (`git-safety-guard`, `test-failure-nudge`, `health-check-nudge`, `session-start-nudge`, `notify`); each script's own header comment documents what it does
+  - `.claude/settings.json` + `.claude/hooks/**` — safety and reminder hooks (`git-safety-guard`, `test-failure-nudge`, `health-check-nudge`, `session-start-nudge`, `notify`); `git-safety-guard` enforces the push-to-main / force-push / `gh pr merge` rules mechanically, so they aren't repeated as prose below. Each script's own header comment documents what it does.
   - `.claude/commands/{elcai-check-env,check-training-env}.md` — read-only diagnostic commands (MCP config, hook wiring, BMAD/ELCAi version drift, gitignore coverage)
   - `_bmad/custom/config.toml` — team config overrides (e.g. `[modules.elcai]` Jira/Confluence keys); everything else under `_bmad/custom/` (notably `*.user.toml`) stays personal/gitignored
   - Also gitignored: `.agents/` (BMAD's per-IDE output for github-copilot) and the rest of `_bmad/` (installer output, per-user, nothing else under it ships with the repo)
-- Don't push directly to `main` — always go through a feature branch + PR
 - Don't update `pom.xml` dependencies "to be helpful"
 - Don't generate documentation outside `docs/` unless the story asks for it
-- Don't merge your own PRs — the participant decides
 
 ## Useful references
 
