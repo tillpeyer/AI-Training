@@ -88,6 +88,8 @@ Each story has its own DoD list — follow that list. The common shape:
   **Exceptions** (allowlisted in `.gitignore` so participants get them via `git pull`):
   - `.claude/skills/bmad-elcai-story-loop/**` — the story-loop skill itself (SKILL.md, checklist.md, customize.toml)
   - `.claude/skills/install-story-loop/**` — skill to copy the story-loop skill into another BMAD project
+  - `.claude/settings.json` + `.claude/hooks/{git-safety-guard.ps1,git-safety-guard.sh,notify.sh}` — the safety-guard (blocks force-push, direct pushes to main, `gh pr merge`, staging BMAD installer output) and attention-needed notification hooks. Both dispatch through the `.sh` wrapper for cross-platform use: the guard runs the PowerShell logic via `pwsh` (falls back to Windows `powershell.exe`, no-ops if neither exists); the notification hook picks a native notifier per OS (`osascript` on macOS, `notify-send` on Linux, a WinForms popup on Windows via `powershell.exe`/git-bash).
+  - `.claude/commands/{elcai-check-env,check-training-env}.md` — read-only diagnostic commands (MCP config, hook wiring, BMAD/ELCAi version drift, gitignore coverage)
   - `_bmad/custom/config.toml` — team config overrides (e.g. `[modules.elcai]` Jira/Confluence keys); everything else under `_bmad/custom/` (notably `*.user.toml`) stays personal/gitignored
   - Also gitignored: `.agents/` (BMAD's per-IDE output for github-copilot) and the rest of `_bmad/` (installer output, per-user, nothing else under it ships with the repo)
 - Don't push directly to `main` — always go through a feature branch + PR
