@@ -10,7 +10,7 @@ The Lunch Order API is a fictional service that handles a daily lunch menu and p
 |---|---|
 | `pom.xml` | Spring Boot 3.5 + Java 21 + H2. Compiles and boots out of the box. |
 | `src/main/java/.../LunchOrderApplication.java` | Spring Boot app — your starting point. |
-| `docs/prd.md` | Phase 2 artefact — pretend the PM agent gave you this. |
+| `_bmad-output/planning-artifacts/prd.md` | Phase 2 artefact — pretend the PM agent gave you this. |
 | `docs/tech-spec.md` | Phase 3 artefact — pretend the architect gave you this. |
 | `docs/stories/STORY-1-list-menu.md` … `STORY-5-admin-add-menu-item.md` | Five v1 backend story drafts (Epic 1). |
 | `docs/stories/STORY-6-frontend-v1.md` | Epic 2 frontend story draft — React + Vite + TypeScript, Claude-designed. |

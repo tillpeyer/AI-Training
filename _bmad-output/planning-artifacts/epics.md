@@ -6,7 +6,7 @@
 
 **Status:** backlog
 **Goal:** Replace the canteen's paper order sheet with a Spring Boot HTTP service that lets employees view today's menu, submit and cancel their own orders, and lets the canteen admin maintain the menu.
-**Source:** `docs/prd.md` §Scope; `docs/tech-spec.md`
+**Source:** `_bmad-output/planning-artifacts/prd.md` §1.4 Scope; `docs/tech-spec.md`
 **Story drafts location:** `docs/stories/STORY-1..5-*.md`
 
 ### Story 1.1: List today's menu

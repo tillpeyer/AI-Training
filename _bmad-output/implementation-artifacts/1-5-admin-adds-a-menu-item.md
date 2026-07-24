@@ -192,7 +192,7 @@ STORY-5 branch parent = `feature/STORY-4-cancel-order` HEAD.
 - Data model: [Source: `docs/tech-spec.md#Data-model`]
 - API conventions: [Source: `docs/tech-spec.md#API-conventions`]
 - Workshop conventions: [Source: `CLAUDE.md#Conventions`]
-- PRD scope: [Source: `docs/prd.md#Scope` — item 5]
+- PRD scope: [Source: `_bmad-output/planning-artifacts/prd.md` §1.4 Scope — item 5]
 - STORY-2 DTO precedent: [Source: `_bmad-output/implementation-artifacts/1-2-submit-an-order.md` — Task 5.1 rationale]
 - STORY-4 CR PRAISE patterns: [Source: `_bmad-output/implementation-artifacts/code-review-1-4-cancel-one-of-my-orders.md`]
 

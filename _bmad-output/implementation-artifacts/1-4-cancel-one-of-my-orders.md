@@ -187,7 +187,7 @@ STORY-4 branch parent = `feature/STORY-3-list-my-orders` HEAD (`cd5b196`).
 - Data model: [Source: `docs/tech-spec.md#Data-model`]
 - API conventions: [Source: `docs/tech-spec.md#API-conventions`]
 - Workshop conventions: [Source: `CLAUDE.md#Conventions`]
-- PRD scope: [Source: `docs/prd.md#Scope` — item 4]
+- PRD scope: [Source: `_bmad-output/planning-artifacts/prd.md` §1.4 Scope — item 4]
 - STORY-2 patterns: [Source: `_bmad-output/implementation-artifacts/1-2-submit-an-order.md`]
 - STORY-3 patterns: [Source: `_bmad-output/implementation-artifacts/1-3-list-my-orders.md`]
 
