@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -40,6 +41,17 @@ public class GlobalExceptionHandler {
         // internals and fully-qualified class names.
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiError("MALFORMED_BODY", "Request body is missing or is not valid JSON"));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handlePathTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        // A path variable that cannot be converted, e.g. /api/v1/menu/not-a-uuid. Without
+        // this mapping Spring answers with its own error shape, which carries no `message`.
+        // Only the parameter name is echoed -- never the offending value (it is caller-supplied)
+        // nor the target type (an implementation detail).
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiError("INVALID_ID",
+                        "Path parameter '" + ex.getName() + "' is not a valid identifier"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

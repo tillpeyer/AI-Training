@@ -259,4 +259,30 @@ class MenuControllerTest {
                 .andExpect(jsonPath("$.code").value("NOT_ADMIN"))
                 .andExpect(jsonPath("$.message").isNotEmpty());
     }
+
+    // --- an unconvertible path variable must still answer with the ApiError shape ---
+
+    @Test
+    void getById_returns400WithApiErrorWhenIdIsNotAUuid() throws Exception {
+        mockMvc.perform(get("/api/v1/menu/not-a-uuid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_ID"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void delete_returns400WithApiErrorWhenIdIsNotAUuid() throws Exception {
+        mockMvc.perform(delete("/api/v1/menu/items/not-a-uuid")
+                        .header("X-Admin", "true"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_ID"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void getById_errorMessageEchoesOnlyTheParameterName() throws Exception {
+        mockMvc.perform(get("/api/v1/menu/not-a-uuid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Path parameter 'id' is not a valid identifier"));
+    }
 }

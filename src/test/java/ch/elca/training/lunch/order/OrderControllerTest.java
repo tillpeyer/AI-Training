@@ -278,6 +278,15 @@ class OrderControllerTest {
     }
 
     @Test
+    void cancel_returns400WithApiErrorWhenOrderIdIsNotAUuid() throws Exception {
+        mockMvc.perform(patch("/api/v1/orders/not-a-uuid/cancel")
+                        .header("X-User-Id", "emp42"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_ID"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
     void submit_errorMessageDoesNotLeakParserInternals() throws Exception {
         mockMvc.perform(post("/api/v1/orders")
                         .header("X-User-Id", "emp42")
