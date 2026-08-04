@@ -166,7 +166,7 @@ Recent commits at session start:
 - API conventions: [Source: `docs/tech-spec.md#API-conventions`]
 - Testing approach: [Source: `docs/tech-spec.md#Testing-approach`]
 - Workshop conventions: [Source: `CLAUDE.md#Conventions`]
-- PRD scope: [Source: `docs/prd.md#Scope` — item 3]
+- PRD scope: [Source: `_bmad-output/planning-artifacts/prd.md` §1.4 Scope — item 3]
 - STORY-2 patterns to replicate: [Source: `_bmad-output/implementation-artifacts/1-2-submit-an-order.md`]
 - STORY-2 CR lessons to apply: [Source: `_bmad-output/implementation-artifacts/code-review-1-2-submit-an-order.md`]
 - STORY-2 retro: [Source: `_bmad-output/implementation-artifacts/retro-1-2-submit-an-order.md`]

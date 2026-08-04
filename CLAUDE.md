@@ -25,7 +25,7 @@ If none of those is active, treat any task here as a workshop-flavoured request:
 
 In order:
 
-1. `docs/prd.md` — Phase 2 artefact, the "why"
+1. `_bmad-output/planning-artifacts/prd.md` — Phase 2 artefact, the "why" (§1.2 Business Goals, §1.3 Stakeholders, §1.4 Scope)
 2. `docs/tech-spec.md` — Phase 3 artefact, the "how" (package layout, data model, conventions)
 3. The story you're about to work on. Two conventions coexist in this repo:
    - **Workshop-lite** — `docs/stories/STORY-N-*.md` (STORY-1..7). Flat markdown, `AC-N` format, no companion files.

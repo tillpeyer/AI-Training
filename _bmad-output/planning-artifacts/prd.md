@@ -99,7 +99,7 @@ These cannot be answered from the loaded documents and must be elicited in later
 
 #### Problem Statement / Pain Point
 
-The paper sheet at reception is lost ~twice per month, produces duplicate orders, and offers zero electronic visibility for kitchen portion planning. Source: `docs/prd.md` §Problem.
+The paper sheet at reception is lost ~twice per month, produces duplicate orders, and offers zero electronic visibility for kitchen portion planning.
 
 #### Strategic Goals and Weightings
 
@@ -299,7 +299,7 @@ Before continuing, please verify:
 
 | # | Constraint | Impact | Source |
 |---|---|---|---|
-| 1 | Two user groups: **Employee** (place / view / cancel own orders) and **Canteen Admin** (`X-Admin: true` — add menu items) | Drives the auth-header model and route-level role checks | `docs/prd.md` §Personas; `docs/tech-spec.md` §API conventions |
+| 1 | Two user groups: **Employee** (place / view / cancel own orders) and **Canteen Admin** (`X-Admin: true` — add menu items) | Drives the auth-header model and route-level role checks | §1.3 Stakeholders; `docs/tech-spec.md` §API conventions |
 | 2 | No role hierarchy beyond Employee / Admin | No delegation, no shift managers, no "kitchen-only" role | Implicit from absence in docs |
 | 3 | Auth boundary owned by upstream gateway (deferred to v2) | Today: client sets `X-User-Id`; v2: enforced by IdP/reverse proxy | `docs/tech-spec.md` §Auth + §1.4 surrounding-systems analysis |
 

@@ -159,7 +159,7 @@ Spring Boot 3.5 (released 2025) is current and stable. Jakarta EE 10 namespace (
 - Package layout: [Source: `docs/tech-spec.md#Package-layout`]
 - Testing approach: [Source: `docs/tech-spec.md#Testing-approach`]
 - Workshop conventions: [Source: `CLAUDE.md#Conventions`]
-- PRD scope: [Source: `docs/prd.md#Scope`]
+- PRD scope: [Source: `_bmad-output/planning-artifacts/prd.md` §1.4 Scope]
 - Epic context: [Source: `_bmad-output/planning-artifacts/epics.md#Epic-1`]
 
 ### Questions saved for end

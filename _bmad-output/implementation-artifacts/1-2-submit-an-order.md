@@ -209,7 +209,7 @@ STORY-2 branch parent = `e5555e3`.
 - No-DTO rule + exception to it: [Source: `docs/tech-spec.md#Decisions-worth-noting` — *"No DTOs for v1, entity = API"*; the `CreateOrderRequest` is the documented exception]
 - Testing approach: [Source: `docs/tech-spec.md#Testing-approach`]
 - Workshop conventions: [Source: `CLAUDE.md#Conventions`]
-- PRD scope: [Source: `docs/prd.md#Scope` — item 2]
+- PRD scope: [Source: `_bmad-output/planning-artifacts/prd.md` §1.4 Scope — item 2]
 - STORY-1 implementation patterns to mimic: [Source: `_bmad-output/implementation-artifacts/1-1-list-todays-menu.md`]
 - Retro lessons applied: [Source: `_bmad-output/implementation-artifacts/retro-2026-05-11-dry-run.md`]
 
