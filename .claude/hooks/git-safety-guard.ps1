@@ -26,19 +26,86 @@ if ($cmd -match 'gh\s+pr\s+merge') {
     exit 2
 }
 
-# 3. Never force-push -- rewrites shared history without explicit re-approval.
-if ($cmd -match 'git\s+push' -and $cmd -match '(--force(-with-lease)?|(?<!\S)-f(?!\S))') {
-    [Console]::Error.WriteLine("Blocked: force-push requires explicit user approval outside the preflight batch. Ask first.")
-    exit 2
+# --- push rules (3 and 4) ----------------------------------------------------
+#
+# Both are evaluated per *segment* rather than against the whole command line.
+# Matching the full string made unrelated tokens leak into the push check: a
+# `git commit -F -` in the same `&&` chain read as `-f` (force), and a branch
+# name anywhere in the line read as the push destination.
+
+$defaultBranches = @('main', 'master')
+
+# Returns the flags/arguments that belong to a single `git push` invocation.
+function Get-PushParts([string]$segment) {
+    $after = $segment -replace '^[\s\S]*?git\s+(?:-\S+\s+)*push\b', ''
+    $tokens = @($after -split '\s+' | Where-Object { $_ -ne '' })
+    return @{
+        Flags = @($tokens | Where-Object { $_ -like '-*' })
+        Args  = @($tokens | Where-Object { $_ -notlike '-*' -and $_ -notmatch '^[0-9]?>' })
+    }
 }
 
-# 4. Never push directly to the repo's default branch (main/master).
-if ($cmd -match 'git\s+push') {
-    $currentBranch = (git rev-parse --abbrev-ref HEAD 2>$null).Trim()
-    $targetsDefault = $cmd -match '\b(origin\s+)?(main|master)\b'
-    if ($targetsDefault -or ($currentBranch -in @('main', 'master') -and $cmd -notmatch '\b(main|master)\b.*:.*')) {
-        [Console]::Error.WriteLine("Blocked: don't push directly to main/master. Use a feature branch + PR.")
-        exit 2
+# True when the push would land on the repo's default branch. Handles refspecs
+# (`HEAD:main`), fully-qualified refs (`refs/heads/main`), and the implicit case
+# (`git push` with no ref, which pushes whatever branch is checked out).
+function Test-TargetsDefaultBranch($parts, [string]$currentBranch) {
+    $isDelete = @($parts.Flags | Where-Object { $_ -eq '--delete' -or $_ -eq '-d' }).Count -gt 0
+
+    $namesDefault = $false
+    foreach ($arg in $parts.Args) {
+        $dst = ($arg -split ':')[-1]         # right-hand side of a refspec
+        $leaf = ($dst -split '/')[-1].TrimStart('+')
+        if ($defaultBranches -contains $leaf) { $namesDefault = $true }
+    }
+
+    # `git push origin --delete some-feature` never touches the default branch;
+    # `git push origin --delete main` very much does.
+    if ($isDelete) { return $namesDefault }
+
+    if ($namesDefault) { return $true }
+
+    # No explicit ref (`git push`, `git push origin`): destination is HEAD.
+    if ($parts.Args.Count -le 1 -and $defaultBranches -contains $currentBranch) { return $true }
+
+    return $false
+}
+
+$segments = @([regex]::Split($cmd, '(?:\|\||&&|;|\||\r?\n)'))
+$pushSegments = @($segments | Where-Object { $_ -match 'git\s+(?:-\S+\s+)*push\b' })
+
+# Conservative fallback: if the command mentions `git push` but splitting found
+# no segment (unusual quoting), evaluate the whole line rather than allow it.
+if ($pushSegments.Count -eq 0 -and $cmd -match 'git\s+(?:-\S+\s+)*push\b') {
+    $pushSegments = @($cmd)
+}
+
+if ($pushSegments.Count -gt 0) {
+    $currentBranch = (git rev-parse --abbrev-ref HEAD 2>$null)
+    if ($currentBranch) { $currentBranch = $currentBranch.Trim() }
+
+    foreach ($segment in $pushSegments) {
+        $parts = Get-PushParts $segment
+
+        # 3. Never force-push -- rewrites shared history without explicit re-approval.
+        #    -cmatch (case-SENSITIVE) so `git commit -F` is not read as `-f`.
+        $forced = $false
+        foreach ($flag in $parts.Flags) {
+            if ($flag -cmatch '^--force(-with-lease)?(=|$)' -or $flag -ceq '-f') { $forced = $true }
+        }
+        # A leading `+` on a refspec (`git push origin +main`) is also a force push.
+        foreach ($arg in $parts.Args) {
+            if ($arg.StartsWith('+')) { $forced = $true }
+        }
+        if ($forced) {
+            [Console]::Error.WriteLine("Blocked: force-push requires explicit user approval outside the preflight batch. Ask first.")
+            exit 2
+        }
+
+        # 4. Never push directly to the repo's default branch (main/master).
+        if (Test-TargetsDefaultBranch $parts $currentBranch) {
+            [Console]::Error.WriteLine("Blocked: don't push directly to main/master. Use a feature branch + PR.")
+            exit 2
+        }
     }
 }
 
