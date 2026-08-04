@@ -8,6 +8,7 @@ import ch.elca.training.lunch.order.NotOrderOwnerException;
 import ch.elca.training.lunch.order.OrderNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,6 +27,19 @@ public class GlobalExceptionHandler {
                     .body(new ApiError("MISSING_USER", "Required header 'X-User-Id' is missing"));
         }
         throw ex; // intentionally unhandled: each required header must have its own mapping
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        // Covers a malformed JSON body, a missing body, and a value Jackson cannot bind
+        // (e.g. "not-a-uuid" for a UUID field). Without this mapping Spring answers with
+        // its own error shape (timestamp/status/error/path), which has no `message` for a
+        // client to display.
+        //
+        // ex.getMessage() is deliberately NOT surfaced: it carries Jackson parser
+        // internals and fully-qualified class names.
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiError("MALFORMED_BODY", "Request body is missing or is not valid JSON"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
