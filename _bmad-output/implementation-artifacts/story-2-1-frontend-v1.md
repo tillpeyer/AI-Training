@@ -38,7 +38,7 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 - [ ] **AC 2.1.7** — **Admin add-item view (`/admin`)** provides a form for `name` + `priceChf` and POSTs to `POST /api/v1/menu/items` with `X-Admin: true`.
 - [ ] **AC 2.1.8** — **Identity handling**: `X-User-Id` is read from a "Sign in as" input persisted to `localStorage`; `X-Admin: true` is sent automatically **only** for requests fired from the `/admin` route.
 - [ ] **AC 2.1.9** — **Error display**: when the backend returns `{"code":"...","message":"..."}`, the UI renders `message` (not `code`); no non-2xx response is silently swallowed.
-- [ ] **AC 2.1.10** — **Design captured**: `frontend/DESIGN.md` (one page) summarises the agreed wireframes and design decisions before code is written. The design step is performed with the Claude Code **`frontend-design`** skill; the participant iterates on the skill's proposals until agreement, then commits the outcome to `DESIGN.md`.
+- [ ] **AC 2.1.10** — **Design captured**: `frontend/DESIGN.md` (one page) summarises the agreed wireframes and design decisions before code is written. The design step is performed with the **`bmad-ux`** skill ("create UX specifications"); the participant iterates on the skill's proposals until agreement, then commits the outcome to `DESIGN.md`.
 
 ## Design Constraints
 
@@ -49,7 +49,8 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 - **Routing:** `react-router-dom`, exactly three routes (`/`, `/orders`, `/admin`).
 - **Styling:** pick one of vanilla CSS, Tailwind, or a small component library (e.g. shadcn/ui via Radix). Whatever falls out of the design step. Do **not** mix multiple styling systems.
 - **Design first:** capture the layout and component breakdown in `frontend/DESIGN.md` **before** writing any component code.
-- **Design tool:** the design step uses the Claude Code **`frontend-design`** skill. It proposes layout + component structure; the participant iterates and captures the agreed outcome in `DESIGN.md`. Do **not** hand-draft the design without invoking the skill first — the skill is the ELCA-standard entry point for frontend design and its output feeds the rest of the story.
+- **Design tool:** the design step uses the **`bmad-ux`** skill (invoke with "create UX specifications" or "help me plan the UX"). It proposes layout + component structure; the participant iterates and captures the agreed outcome in `DESIGN.md`. Do **not** hand-draft the design without invoking the skill first — the point of the exercise is that the design step is agent-driven and reviewable, not just the code.
+- **Optional, for the implementation phase only:** Anthropic ships a **`frontend-design`** skill (official `claude-plugins-official` marketplace, not installed by default — `/plugin install frontend-design@claude-plugins-official`). It generates polished component code with a committed aesthetic direction. It is **not** a substitute for `bmad-ux` in AC 2.1.10: it produces code, not a wireframe spec, so it belongs to AC 2.1.3 – 2.1.9, after `DESIGN.md` is agreed. Its house style is deliberately bold ("avoid generic AI aesthetics"), which may overshoot an internal CRUD tool — if you use it, say so in the PR and keep the ACs, not the aesthetics, as the acceptance bar.
 
 ## Artefacts to Reuse
 
@@ -89,7 +90,7 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 ## Definition of Done
 
 - [ ] All ACs (2.1.1 – 2.1.10) ticked
-- [ ] PR description references the `frontend-design` skill session that produced `DESIGN.md` (name the skill, and paste one representative excerpt or screenshot — makes the tool-use reviewable, not just the artefact)
+- [ ] PR description references the `bmad-ux` skill session that produced `DESIGN.md` (name the skill, and paste one representative excerpt or screenshot — makes the tool-use reviewable, not just the artefact)
 - [ ] `cd frontend && npm run build` succeeds (production bundle generates without errors)
 - [ ] `cd frontend && npm run lint` passes (Vite `react-ts` template ESLint config, no rules disabled)
 - [ ] ≥1 Vitest + `@testing-library/react` component test passes
