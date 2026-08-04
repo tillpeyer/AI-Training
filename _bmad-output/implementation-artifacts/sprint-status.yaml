@@ -46,8 +46,9 @@ development_status:
   1-3-list-my-orders: done
   1-4-cancel-one-of-my-orders: done
   1-5-admin-adds-a-menu-item: done
+  1-8-admin-delete-menu-item: done
   epic-1-retrospective: optional
-  epic-2: backlog
-  2-1-frontend-v1: backlog
-  2-7-get-menu-item-by-id: review
+  epic-2: in-progress
+  2-1-frontend-v1: ready-for-dev
+  2-7-get-menu-item-by-id: done
   epic-2-retrospective: optional
