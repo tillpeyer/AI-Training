@@ -48,9 +48,9 @@
   <acceptanceCriteria>
     <criterion id="2.1.1">Scaffold frontend/ via npm create vite@latest frontend -- --template react-ts (defaults accepted).</criterion>
     <criterion id="2.1.2">cd frontend &amp;&amp; npm install &amp;&amp; npm run dev boots Vite dev server on port 5173, zero errors.</criterion>
-    <criterion id="2.1.3">Menu view (/) lists today's menu from GET /api/v1/menu; each item shows name, priceChf formatted as CHF, and an "available" indicator.</criterion>
+    <criterion id="2.1.3">Menu view (/) lists today's menu from GET /api/v1/menu; each item shows name and priceChf formatted as CHF. NO availability indicator: MenuService.listAvailable() calls findAllByAvailableTrue(), so the endpoint returns available items only and such an indicator would always read "available". Do not build UI for a state the API cannot return.</criterion>
     <criterion id="2.1.4">Order form (on /) picks menu item + quantity (1–10), submits via POST /api/v1/orders with X-User-Id header.</criterion>
-    <criterion id="2.1.5">My orders view (/orders) lists caller's orders from GET /api/v1/orders/me sorted newest first, shows item name, quantity, status, and Cancel button next to each SUBMITTED order.</criterion>
+    <criterion id="2.1.5">My orders view (/orders) lists caller's orders from GET /api/v1/orders/me sorted newest first, shows item name, quantity, status, and Cancel button next to each SUBMITTED order. Order carries menuItemId but no name, and GET /api/v1/menu lists available items only, so resolve names via GET /api/v1/menu/{id} (returns the item regardless of availability), one request per DISTINCT menuItemId, cached by id.</criterion>
     <criterion id="2.1.6">Cancel action calls PATCH /api/v1/orders/{id}/cancel, refreshes list, shows brief confirmation on success.</criterion>
     <criterion id="2.1.7">Admin add-item view (/admin): form for name + priceChf, POSTs to /api/v1/menu/items with X-Admin: true.</criterion>
     <criterion id="2.1.8">Identity handling: X-User-Id read from "Sign in as" input persisted to localStorage; X-Admin: true sent ONLY from /admin route.</criterion>
@@ -59,7 +59,8 @@
   </acceptanceCriteria>
 
   <artifactsToReuse>
-    <endpoint method="GET"    path="/api/v1/menu"                    ac="2.1.3"/>
+    <endpoint method="GET"    path="/api/v1/menu"                    ac="2.1.3" note="available items only (findAllByAvailableTrue)"/>
+    <endpoint method="GET"    path="/api/v1/menu/{id}"               ac="2.1.5" note="story 2.7 — resolves an order's item name regardless of availability"/>
     <endpoint method="POST"   path="/api/v1/orders"                  ac="2.1.4" headers="X-User-Id"/>
     <endpoint method="GET"    path="/api/v1/orders/me"               ac="2.1.5" headers="X-User-Id"/>
     <endpoint method="PATCH"  path="/api/v1/orders/{id}/cancel"      ac="2.1.6" headers="X-User-Id"/>

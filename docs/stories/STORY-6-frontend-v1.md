@@ -19,9 +19,9 @@ Tech-spec section: *§API conventions and §Mock auth still apply — the fronte
 - [ ] **Design captured** *(prerequisite for everything below)* — the design step is done with the **`bmad-ux`** skill ("create UX specifications"); `frontend/DESIGN.md` (one page) summarises the agreed wireframes and decisions coming out of the skill session
 - [ ] A new `frontend/` directory at the repo root, scaffolded with React + Vite + TypeScript (`npm create vite@latest frontend -- --template react-ts`)
 - [ ] `cd frontend && npm install && npm run dev` boots the Vite dev server on its default port (5173)
-- [ ] **Menu view (`/`)** — landing page lists today's menu from `GET /api/v1/menu`; each item shows `name`, `priceChf` formatted as CHF, and an "available" indicator
+- [ ] **Menu view (`/`)** — landing page lists today's menu from `GET /api/v1/menu`; each item shows `name` and `priceChf` formatted as CHF. *No availability indicator:* that endpoint returns available items only (`findAllByAvailableTrue`), so the flag would always read "available" — don't build UI for a state the API can't return
 - [ ] **Order form** — user can pick a menu item and a quantity (1–10) and submit (`POST /api/v1/orders` with `X-User-Id` header)
-- [ ] **My orders view (`/orders`)** — page lists the caller's orders (`GET /api/v1/orders/me`), sorted newest first, showing item name, quantity, status, and a "Cancel" button next to each `SUBMITTED` order
+- [ ] **My orders view (`/orders`)** — page lists the caller's orders (`GET /api/v1/orders/me`), sorted newest first, showing item name, quantity, status, and a "Cancel" button next to each `SUBMITTED` order. *An order carries `menuItemId`, not a name* — resolve it with `GET /api/v1/menu/{id}` (one call per distinct id, cached), since the menu list omits unavailable items
 - [ ] **Cancel action** — clicking Cancel calls `PATCH /api/v1/orders/{id}/cancel` and refreshes the my-orders view; success shows a brief confirmation
 - [ ] **Admin add-item view (`/admin`)** — form takes `name` and `priceChf`, posts to `POST /api/v1/menu/items` with `X-Admin: true`
 - [ ] **Identity handling** — `X-User-Id` is read from a small "Sign in as" input that persists to `localStorage`; `X-Admin: true` is sent automatically only for requests fired from the `/admin` route
