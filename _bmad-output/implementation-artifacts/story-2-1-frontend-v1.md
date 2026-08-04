@@ -50,6 +50,7 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 - **Styling:** pick one of vanilla CSS, Tailwind, or a small component library (e.g. shadcn/ui via Radix). Whatever falls out of the design step. Do **not** mix multiple styling systems.
 - **Design first:** capture the layout and component breakdown in `frontend/DESIGN.md` **before** writing any component code.
 - **Design tool:** the design step uses the **`bmad-ux`** skill (invoke with "create UX specifications" or "help me plan the UX"). It proposes layout + component structure; the participant iterates and captures the agreed outcome in `DESIGN.md`. Do **not** hand-draft the design without invoking the skill first — the point of the exercise is that the design step is agent-driven and reviewable, not just the code.
+- **Optional, for the implementation phase only:** Anthropic ships a **`frontend-design`** skill (official `claude-plugins-official` marketplace, not installed by default — `/plugin install frontend-design@claude-plugins-official`). It generates polished component code with a committed aesthetic direction. It is **not** a substitute for `bmad-ux` in AC 2.1.10: it produces code, not a wireframe spec, so it belongs to AC 2.1.3 – 2.1.9, after `DESIGN.md` is agreed. Its house style is deliberately bold ("avoid generic AI aesthetics"), which may overshoot an internal CRUD tool — if you use it, say so in the PR and keep the ACs, not the aesthetics, as the acceptance bar.
 
 ## Artefacts to Reuse
 

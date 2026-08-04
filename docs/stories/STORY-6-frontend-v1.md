@@ -36,6 +36,7 @@ Tech-spec section: *§API conventions and §Mock auth still apply — the fronte
 - **Styling**: pick one before you start — vanilla CSS, Tailwind, or a small component library (e.g. shadcn/ui via Radix). Whatever the `bmad-ux` skill lands on in the design step.
 - **CORS**: already configured on the backend (`ch.elca.training.lunch.common.WebConfig`) to allow `http://localhost:5173` (Vite default) for all methods used by the API. **No backend change needed.** If you prefer a Vite proxy instead, you can still add one in `vite.config.ts`, but it isn't required.
 - **Design first**: run the **`bmad-ux`** skill ("create UX specifications") to produce a layout + component breakdown, iterate on its proposals until you're happy, capture the agreed outcome in `frontend/DESIGN.md`, **then** write any component code. Do not hand-draft the design without invoking the skill first.
+- **Optional polish pass**: Anthropic's **`frontend-design`** skill (`/plugin install frontend-design@claude-plugins-official`) writes styled component code with a strong aesthetic point of view. Use it while implementing the views if you want, *after* `DESIGN.md` is agreed — it is not a replacement for the design step, and its house style leans bold for an internal tool. Mention it in the PR if you use it.
 
 ## Definition of Done
 
