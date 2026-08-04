@@ -8,7 +8,7 @@
 | **Estimate** | 8 CP *(1 CP = 1 developer-day incl. unit tests)* — large; SM may split into 3–4 sub-stories per view |
 | **Priority** | Must (kicks off Epic 2) |
 | **Security** | ELCA (workshop repo — no Jira integration; see Deviations below) |
-| **Depends on** | Stories 1.1–1.5 (backend v1 must be running), Story 1.2.2 (admin toggle) optional but useful |
+| **Depends on** | Stories 1.1–1.5 (backend v1 must be running); story 2.7 (`GET /api/v1/menu/{id}`, already on `main`) is required by AC 2.1.5 |
 | **Base branch** | `main` |
 
 ## Problem Statement
@@ -31,9 +31,11 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 
 - [ ] **AC 2.1.1** — `frontend/` directory scaffolded at repo root via `npm create vite@latest frontend -- --template react-ts` (defaults accepted).
 - [ ] **AC 2.1.2** — `cd frontend && npm install && npm run dev` boots the Vite dev server on port **5173** with zero errors.
-- [ ] **AC 2.1.3** — **Menu view (`/`)** lists today's menu from `GET /api/v1/menu`; each item displays `name`, `priceChf` formatted as CHF, and an "available" indicator.
+- [ ] **AC 2.1.3** — **Menu view (`/`)** lists today's menu from `GET /api/v1/menu`; each item displays `name` and `priceChf` formatted as CHF.
+  > **No availability indicator in v1.** `MenuService.listAvailable()` calls `findAllByAvailableTrue()`, so this endpoint returns *only* available items — an indicator driven off `item.available` would read "available" 100% of the time. Do not build UI for a state the API cannot return. Surfacing unavailable items would need a backend change, which this story forbids.
 - [ ] **AC 2.1.4** — **Order form** (on `/`) lets the user pick a menu item and quantity (1–10) and submits via `POST /api/v1/orders` with the `X-User-Id` header.
 - [ ] **AC 2.1.5** — **My orders view (`/orders`)** lists the caller's orders from `GET /api/v1/orders/me`, sorted newest first, showing item name, quantity, status, and a "Cancel" button next to each `SUBMITTED` order.
+  > **The item name needs resolving.** `Order` carries `menuItemId`, not a name, and `GET /api/v1/menu` lists available items only — so joining against that list leaves an order for a since-unavailable item nameless. Resolve each order's name via **`GET /api/v1/menu/{id}`** (story 2.7's endpoint; returns the item regardless of availability), one request per distinct `menuItemId`. Cache per id so a list of N orders over M distinct items costs M requests, not N.
 - [ ] **AC 2.1.6** — **Cancel action** on the my-orders view calls `PATCH /api/v1/orders/{id}/cancel`, refreshes the list, and shows a brief confirmation on success.
 - [ ] **AC 2.1.7** — **Admin add-item view (`/admin`)** provides a form for `name` + `priceChf` and POSTs to `POST /api/v1/menu/items` with `X-Admin: true`.
 - [ ] **AC 2.1.8** — **Identity handling**: `X-User-Id` is read from a "Sign in as" input persisted to `localStorage`; `X-Admin: true` is sent automatically **only** for requests fired from the `/admin` route.
@@ -103,8 +105,8 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 
 ## Deviations from ELCAi (accepted for the workshop repo)
 
-- **No Jira ticket / no `Analyzed` transition** — the workshop repo does not use Jira. Sprint state lives implicitly in this file's `Status` field.
-- **No `sprint-status.yaml`** — orphan artefact without a Jira board; not bootstrapped for this story.
+- **No Jira ticket / no `Analyzed` transition** — the workshop repo does not use Jira.
+- **Sprint state is tracked in two places** — `_bmad-output/implementation-artifacts/sprint-status.yaml` (which does list `2-1-frontend-v1`) and this file's `Status` field. Keep them in step; the yaml is what the SM and Dev skills read.
 - **No `tech-spec-epic-2.md`** — the repo has a single flat `docs/tech-spec.md` covering the backend; the frontend is API-consuming only, no separate epic spec required.
 - **`main` as base branch** — workshop uses trunk-based flow, not the `develop` branch ELCAi CI/CD guides assume.
 - **SonarQube guardrails not applicable** — this is a TypeScript/React project; ESLint is the closest analog and is already required in the DoD.
