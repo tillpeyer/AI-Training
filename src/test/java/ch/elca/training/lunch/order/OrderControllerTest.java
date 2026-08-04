@@ -241,4 +241,52 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.code").value("ALREADY_CANCELLED"))
                 .andExpect(jsonPath("$.message").isNotEmpty());
     }
+
+    // --- unreadable request bodies must still answer with the ApiError shape ---
+    // A client can only display `message` if every non-2xx response carries one.
+
+    @Test
+    void submit_returns400WithApiErrorWhenBodyIsMalformedJson() throws Exception {
+        mockMvc.perform(post("/api/v1/orders")
+                        .header("X-User-Id", "emp42")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"menuItemId\":"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("MALFORMED_BODY"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void submit_returns400WithApiErrorWhenBodyIsMissing() throws Exception {
+        mockMvc.perform(post("/api/v1/orders")
+                        .header("X-User-Id", "emp42")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("MALFORMED_BODY"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void submit_returns400WithApiErrorWhenMenuItemIdIsNotAUuid() throws Exception {
+        mockMvc.perform(post("/api/v1/orders")
+                        .header("X-User-Id", "emp42")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"menuItemId\":\"not-a-uuid\",\"quantity\":2}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("MALFORMED_BODY"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void submit_errorMessageDoesNotLeakParserInternals() throws Exception {
+        mockMvc.perform(post("/api/v1/orders")
+                        .header("X-User-Id", "emp42")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"menuItemId\":"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString("com.fasterxml"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString("ch.elca.training"))));
+    }
 }
