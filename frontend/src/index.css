@@ -1,0 +1,131 @@
+:root {
+  --color-background: #f7f7f8;
+  --color-surface: #ffffff;
+  --color-surface-alt: #eef0f2;
+  --color-border: #d8dbe0;
+  --color-text: #1a1d21;
+  --color-text-muted: #5b6169;
+  --color-primary: #2563eb;
+  --color-on-primary: #ffffff;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fdecec;
+  --color-success: #16a34a;
+  --color-success-bg: #eafaf0;
+
+  --font-sans: system-ui, sans-serif;
+
+  --rounded-sm: 4px;
+  --rounded-md: 8px;
+
+  --spacing-unit: 8px;
+  --spacing-gutter: 16px;
+  --spacing-section-gap: 32px;
+
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-background);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--spacing-gutter);
+  min-height: 100vh;
+}
+
+h1,
+h2 {
+  font-weight: 600;
+  margin: 0 0 var(--spacing-unit);
+}
+
+h1 {
+  font-size: 20px;
+}
+
+h2 {
+  font-size: 16px;
+}
+
+label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+input,
+select,
+button {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+input,
+select {
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded-sm);
+  background: var(--color-surface);
+  padding: 6px 10px;
+}
+
+button {
+  cursor: pointer;
+  border-radius: var(--rounded-sm);
+  padding: 6px 14px;
+  border: 1px solid transparent;
+}
+
+button.primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+button.danger {
+  background: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded-md);
+  padding: var(--spacing-gutter);
+  margin-bottom: var(--spacing-unit);
+}
+
+.banner-error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-radius: var(--rounded-sm);
+  padding: var(--spacing-unit) var(--spacing-gutter);
+  margin-bottom: var(--spacing-gutter);
+}
+
+.status-submitted {
+  color: var(--color-text);
+}
+
+.status-cancelled {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.banner-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-radius: var(--rounded-sm);
+  padding: var(--spacing-unit) var(--spacing-gutter);
+  margin-bottom: var(--spacing-gutter);
+}

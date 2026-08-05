@@ -65,4 +65,5 @@ _bmad/custom/*
 node_modules/
 dist/
 *.local
+.playwright-mcp/
 

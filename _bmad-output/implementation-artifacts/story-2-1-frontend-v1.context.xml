@@ -10,7 +10,7 @@
     <epic>2</epic>
     <story>1</story>
     <cp>8</cp>
-    <status>ready-for-dev</status>
+    <status>review</status>
     <baseBranch>main</baseBranch>
     <jira note="workshop repo — no Jira integration">N/A</jira>
     <communicationLanguage>English</communicationLanguage>
