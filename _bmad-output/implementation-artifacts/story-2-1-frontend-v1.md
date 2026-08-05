@@ -100,11 +100,12 @@ Epic 1 shipped a headless HTTP API — usable but not shippable to end users. Em
 - [x] `cd frontend && npm run build` succeeds (production bundle generates without errors)
 - [x] `cd frontend && npm run lint` passes (template ships **oxlint**, not ESLint, as of this Vite version — same intent, no rules disabled)
 - [x] ≥1 Vitest + `@testing-library/react` component test passes
-- [x] Manual smoke: backend + Vite dev server up simultaneously, all five sub-features walked through, screenshots attached to the PR
+- [x] Manual smoke: backend + Vite dev server up simultaneously, all five sub-features walked through and re-verified after code review (status-pill + auto-dismiss)
+- [ ] Screenshots attached to the PR — **not done**: `gh` CLI has no path to upload binary images to a PR (gist/API both rejected binary content); screenshots exist locally at `.playwright-mcp/smoke-*.png` (gitignored) for whoever has browser access to drag into the PR
 - [x] `frontend/DESIGN.md` exists and reflects the agreed wireframes
 - [x] No changes to `pom.xml`, backend Java sources, or `application.properties`
 - [x] `.gitignore` already covers `node_modules/`, `dist/`, `*.local`; added `.playwright-mcp/` (Playwright MCP screenshot output from the manual smoke test, not a frontend build artifact the story anticipated)
-- [ ] PR opened against `main` with screenshots attached
+- [x] PR opened against `main` — https://github.com/tillpeyer/AI-Training/pull/28 (screenshots not attached — see note above)
 - [x] `story-2-1-frontend-v1.context.xml` companion file exists and is referenced from this story
 
 ## Dev Agent Record
