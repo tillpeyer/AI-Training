@@ -1,0 +1,31 @@
+# Line-ending policy.
+#
+# Everything is stored LF in the repository; the working-tree ending is then
+# pinned per file type below rather than left to each participant's
+# core.autocrlf. Participants clone this repo onto Windows, macOS, and WSL, and
+# the shell scripts here are executed by whichever bash is on PATH -- so the
+# ending has to be decided by the repo, not by local config.
+* text=auto
+
+# Scripts run by bash MUST be LF. Git Bash (MSYS2) happens to strip CR, which
+# masks the problem on a default Windows setup, but GNU bash under WSL and on
+# macOS/Linux does not: a CRLF script fails on `fi\r` / `then\r`, taking every
+# .claude/hooks/* launcher (and `./mvnw`) down with it.
+*.sh text eol=lf
+mvnw text eol=lf
+
+# Batch files are read by cmd.exe, which genuinely needs CRLF -- LF breaks
+# multi-line constructs such as labels and goto targets.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Don't let Git rewrite bytes inside archives or images.
+*.jar binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.xlsx binary
+*.docx binary
+*.pptx binary

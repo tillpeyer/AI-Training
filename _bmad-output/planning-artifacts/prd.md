@@ -19,6 +19,31 @@ author: Till
 <!-- Content will be appended sequentially through collaborative workflow steps -->
 <!-- Each section corresponds to a Confluence sub-page -->
 
+> ## Amendment log
+>
+> ### 2026-09-03 — Feature 2 (browser frontend) moved from Out of Scope to In Scope
+>
+> This SRD was written on 2026-05-11, when the deliverable was an HTTP API and nothing else. It
+> therefore excluded a frontend outright. Feature 2 has since been committed and an Angular 21
+> client is being delivered under story 2.1, so **six places in this document contradicted the
+> work in flight.** All six are amended below and tagged `[AMENDED 2026-09-03]`:
+>
+> | Section | Was | Now |
+> |---|---|---|
+> | 1.1 Pre-existing Decisions | Scope exclusions included "no frontend" | Exclusion lifted; frontend stack recorded |
+> | 1.4 In Scope | No frontend row | Feature 2 listed with its three routes |
+> | 1.4 Out of Scope, item 5 | "**Frontend** — No web UI, no mobile app. API-only deliverable" | Removed; superseded |
+> | 1.4 Surrounding Systems | Kitchen view attributed to "STORY-6" | Corrected — STORY-6 *is* the frontend; no kitchen-view story exists |
+> | 1.4 Abstract Architecture Diagram | "Employee browser/curl (no UI)" | Angular SPA drawn in |
+> | 1.5 Technical Constraints | Backend stack only | Frontend constraints added (13–19) |
+>
+> **What did not change:** the mock-auth model, the H2 persistence decision, the no-DTO rule, and
+> every backend constraint. The frontend consumes the existing API and required no backend change.
+>
+> Architecture of record for both Features is now
+> `_bmad-output/planning-artifacts/architecture.md` and its spine, which supersede the
+> backend-only `docs/tech-spec.md`.
+
 ## PHASE 1: CLEAN START
 
 ### 1.1 Assets Check
@@ -59,8 +84,16 @@ A **paper sheet at reception** is the current system: employees write down their
 - No real authentication / authorisation
 
 **Scope exclusions** (locked by PRD):
-- No payment, no notifications, no multi-day menus, no frontend
+- No payment, no notifications, no multi-day menus
 - No real auth beyond the mock headers
+- ~~No frontend~~ — **[AMENDED 2026-09-03]** lifted. Feature 2 delivers an Angular 21 browser client; see 1.4 In Scope.
+
+**Frontend stack** **[AMENDED 2026-09-03]** (locked by the Feature 2 decision of 2026-09-03):
+- Angular 21 (LTS until 2027-06-30), TypeScript 5.9, npm
+- Standalone components, signals for state, Angular Router with lazy routes
+- `httpResource` for reads, `HttpClient` for mutations
+- Component-scoped CSS against a token system; no component library, no web fonts
+- Design of record: `frontend-angular/DESIGN.md` (visual identity) and `EXPERIENCE.md` (behaviour)
 
 **Workshop conventions** (locked by `CLAUDE.md`):
 - Branch: `feature/STORY-<n>-<slug>`
@@ -110,7 +143,7 @@ The paper sheet at reception is lost ~twice per month, produces duplicate orders
 | 3 | **Advance facilities digitalisation roadmap** | Medium | Lighthouse for retiring paper-based internal processes — sets a pattern for future facilities-ops apps |
 | 4 | **Free reception staff from lunch coordination** | Medium | Removes a non-core duty from the front desk; reception no longer mediates between employees and the canteen |
 
-> *Goal "Reduce canteen food waste" was considered but **deferred to v2**: it requires a kitchen-facing aggregated view (a STORY-6-style feature) that is not in the current scope. Promising it here without the supporting story would be dishonest.*
+> *Goal "Reduce canteen food waste" was considered but **deferred to v2**: it requires a kitchen-facing aggregated view that is not in the current scope. Promising it here without the supporting story would be dishonest.* **[AMENDED 2026-09-03]** This originally called that a "STORY-6-style feature", which was wrong — STORY-6 is the employee/admin frontend. **No kitchen-view story exists in any convention**, so this goal still has no supporting story, and Feature 2 does not advance it.
 
 #### Success Criteria (SMART)
 
@@ -208,7 +241,8 @@ Before continuing, please verify:
 | 4 | **Mock auth** | `X-User-Id` header on `/orders/**`; `X-Admin: true` on admin endpoints |
 | 5 | **Persistence** | H2 in-memory DB; UUID PKs; `ddl-auto: update` |
 | 6 | **Operational** | `/actuator/health` reachable returning `UP` |
-| 7 | **Documentation** | This SRD; the tech spec (`docs/tech-spec.md`); the 5 story files |
+| 7 | **Documentation** | This SRD; the architecture of record (`_bmad-output/planning-artifacts/architecture.md` + spine, superseding `docs/tech-spec.md`); the story files |
+| 8 | **Frontend (Feature 2)** **[AMENDED 2026-09-03]** | Angular 21 single-page client over the existing API. Three routes: `/` (menu + order form), `/orders` (own orders + cancel), `/admin` (add menu item). Light and dark themes. Consumes the API unchanged — no backend work |
 
 #### Out of Scope
 
@@ -218,7 +252,7 @@ Before continuing, please verify:
 | 2 | **Payment** | No price collection, no integration with finance / expense systems | PRD §"Out of scope". This is an ordering service, not a billing service |
 | 3 | **Notifications** | No email / SMS / Teams on order placement or cancellation | PRD §"Out of scope" |
 | 4 | **Multi-day menus** | Only "today" exists; no historical menus, no advance ordering | PRD §"Out of scope". Avoids calendar / timezone complexity |
-| 5 | **Frontend** | No web UI, no mobile app | PRD §"Out of scope". API-only deliverable |
+| 5 | ~~**Frontend**~~ | **[AMENDED 2026-09-03 — no longer out of scope.]** Superseded by Feature 2; see In Scope item 8. Still excluded: a **native mobile app**, and any mobile-specific surface — the client is desktop/tablet web at a single measure | Original rationale ("API-only deliverable") lapsed when Feature 2 was committed |
 | 6 | **Kitchen-facing view** | No aggregated portions-per-item endpoint for the kitchen | Not in stories 1–5; deferred to v2 (see §1.2 deferred items) |
 | 7 | **Observability beyond `/health`** | No metrics, no tracing, no log aggregation | Tech spec §"What this doc deliberately doesn't decide" |
 | 8 | **Database migrations** | No Flyway / Liquibase; H2 `ddl-auto: update` is the lifecycle manager | Tech spec; workshop simplification |
@@ -239,18 +273,22 @@ Before continuing, please verify:
 | # | System | Direction | Purpose | Data Exchanged | Business Process | Business Rules |
 |---|---|---|---|---|---|---|
 | 1 | **Implicit identity provider** (reverse proxy / SSO) | Upstream (deferred) | Sets `X-User-Id` in v2 instead of accepting it as a raw client header | `userId` | Authentication | Today: trust client; v2: enforced upstream |
-| 2 | **Kitchen / canteen operations** (manual today) | Downstream (deferred) | Receives the day's order list to prep food | Aggregated order list per menu item | Daily kitchen prep | Today: admin reads from app; v2: dedicated kitchen view (STORY-6) |
+| 2 | **Kitchen / canteen operations** (manual today) | Downstream (deferred) | Receives the day's order list to prep food | Aggregated order list per menu item | Daily kitchen prep | Today: admin reads from app. **[AMENDED 2026-09-03]** A dedicated kitchen view remains deferred and **has no story** — the earlier "STORY-6" attribution was wrong: `docs/stories/STORY-6-frontend-v1.md` is the employee/admin frontend, not a kitchen view. Still an open gap |
 | 3 | **IT-Ops monitoring** | Downstream (operational) | Polls `/actuator/health` for uptime tracking | UP / DOWN status | Uptime SLA monitoring | None — purely operational |
 
 #### Abstract Architecture Diagram
 
+**[AMENDED 2026-09-03]** — the Angular client replaces the "no UI" box.
+
 ```
                        ┌───────────────────────────┐
-                       │   Employee browser/curl   │
-                       │  (no UI; direct API call) │
+                       │  Angular 21 SPA  :5173    │
+                       │  / · /orders · /admin     │
+                       │  (curl still supported)   │
                        └─────────────┬─────────────┘
-                                     │  HTTP/JSON
+                                     │  HTTP/JSON  (CORS: one allowed origin)
                                      │  + X-User-Id header
+                                     │  + X-Admin only from /admin
                                      ▼
    ┌───────────────────┐    ┌────────────────────────────────┐    ┌──────────────────────┐
    │  IT-Ops Uptime    │───▶│   Lunch Order API (Spring 3.5) │    │   Canteen Admin      │
@@ -271,7 +309,7 @@ Before continuing, please verify:
                             ┌────────────────────────────────┐
                             │     Kitchen / canteen team     │
                             │  (reads aggregated orders —    │
-                            │   v1: manual; v2: STORY-6 view)│
+                            │   manual; no story yet)        │
                             └────────────────────────────────┘
 
    ⋯ deferred to v2 ⋯
@@ -283,6 +321,7 @@ Before continuing, please verify:
 - ⚠️ **Inconsistency**: Tech spec says *"No external systems. No async."* but `X-User-Id` is meaningless without an implicit upstream IdP. The mock works because *someone* (gateway, curl) sets it. **Recommendation:** in §1.5 Constraints, name this as the "auth boundary" so the implicit dependency is visible.
 - ⚠️ **Gap**: kitchen-consumption channel is undefined. If we ship v1 without it, the canteen admin is the bottleneck. Worth surfacing to the sponsor in the §1.3 communication plan.
 - ✅ **Coherent**: scope inclusions and exclusions are mutually exclusive and well-justified.
+- 🔄 **[AMENDED 2026-09-03]** That coherence lapsed and has been restored. Between Feature 2 being committed and this amendment, the document excluded a frontend while one was being built — the frontend was delivered against an SRD that forbade it. Caught by an architecture review, not by the delivery process. **Lesson worth recording: a scope exclusion is a live constraint, and committing a Feature must trigger a re-read of the exclusion list.**
 
 ### 1.5 Constraints
 
@@ -320,6 +359,12 @@ Before continuing, please verify:
 | 11 | **`ddl-auto: update`** — no Flyway / Liquibase | Schema lifecycle managed by Hibernate for workshop simplicity | `docs/tech-spec.md` §Decisions |
 | 12 | **Test framework**: `@WebMvcTest` (controllers), `@DataJpaTest` (repos), `@SpringBootTest` only for smoke test | Slow tests forbidden | `docs/tech-spec.md` §Testing |
 | 13 | **No additional dependencies** beyond what is in `pom.xml` unless story requires it | Limits scope creep | `CLAUDE.md` §Scope rules |
+| 14 | **Angular 21 + TypeScript 5.9** **[AMENDED 2026-09-03]** | Locked frontend framework. In LTS to 2027-06-30; Angular 22 is current but not adopted | Feature 2 decision; `frontend-angular/package.json` |
+| 15 | **No component library** (no Tailwind, Material, shadcn) **[AMENDED]** | Component-scoped CSS against a token system; a library would import a competing visual system | `frontend-angular/DESIGN.md` |
+| 16 | **No web fonts** **[AMENDED]** | Type stacks are OS-shipped, so the client makes no font request and adds no font dependency | `frontend-angular/DESIGN.md` |
+| 17 | **Frontend dev server pinned to port 5173** **[AMENDED]** | `WebConfig` allows exactly one CORS origin, so the port is load-bearing; changing one means changing both | `common/WebConfig`; architecture spine AD-13 |
+| 18 | **Frontend is a pure API consumer** **[AMENDED]** | No changes to `pom.xml`, Java sources or `application.yml`. Feature 2 required zero backend work | Feature 2 decision |
+| 19 | **Light and dark themes via `prefers-color-scheme`** **[AMENDED]** | No in-app toggle, no persisted preference; components never branch on theme | `frontend-angular/DESIGN.md` |
 
 #### Financial Constraints
 

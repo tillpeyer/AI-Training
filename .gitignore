@@ -19,7 +19,8 @@ out/
 Thumbs.db
 
 # .claude — mostly per-user, but a few pieces ship with the repo:
-# the story-loop skill, install-story-loop skill, the safety-guard +
+# the story-loop skill, install-story-loop skill, the Google developer-guide
+# style skill, the safety-guard +
 # test-failure + session-start + notification hooks (portable, tested on
 # Windows via git-bash), and two read-only env-check commands.
 .claude/*
@@ -29,6 +30,8 @@ Thumbs.db
 !.claude/skills/bmad-elcai-story-loop/**
 !.claude/skills/install-story-loop/
 !.claude/skills/install-story-loop/**
+!.claude/skills/google-developer-guide-style-rules/
+!.claude/skills/google-developer-guide-style-rules/**
 !.claude/hooks/
 .claude/hooks/*
 !.claude/hooks/git-safety-guard.ps1
@@ -61,8 +64,11 @@ _bmad/custom/*
 
 .mcp.json
 
-# Frontend (STORY-6 Epic 2)
+# Frontend (STORY-6 / story 2.1 — Feature 2)
 node_modules/
 dist/
 *.local
+# Angular CLI build cache — added 2026-09-03. Was missing, so `git add frontend-angular/`
+# staged .tsbuildinfo plus a compiler .db and .db-lock from .angular/cache/.
+.angular/
 
