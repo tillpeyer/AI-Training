@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ELCAi story context companion for 2-1-frontend-v1.md
+  Purpose: give the Dev agent everything it needs to implement the frontend without re-reading the whole repo.
+  Author: ELCAi analyst workflow.
+  Revised 2026-09-03: rewritten from React + Vite to Angular 21 following the decision to adopt the
+  spike/story-2-1-angular baseline as Feature 2's deliverable. AC ids 2.1.1-2.1.10 kept stable;
+  2.1.11-2.1.13 added. Estimate revised 8 CP -> 3 CP.
+-->
+<storyContext id="2.1" name="frontend-v1" security="ELCA">
+
+  <metadata>
+    <feature>2</feature>
+    <story>1</story>
+    <cp>5</cp>
+    <cpNote>8 -> 3 on adopting the Angular baseline, then 3 -> 5 on 2026-09-03 when the AC 2.1.10 design step ADDED scope: dark mode (2.1.15), a two-step cancel confirm (2.1.6), per-field form errors (2.1.4), the menu empty state (2.1.3) and the token audit (2.1.14). Five ACs arrive satisfied (2.1.1, 2.1.2, 2.1.7, 2.1.8, 2.1.9); 2.1.10 is done; nine remain open (2.1.3, 2.1.4, 2.1.5, 2.1.6, 2.1.11, 2.1.12, 2.1.13, 2.1.14, 2.1.15).</cpNote>
+    <status>ready-for-dev</status>
+    <baseBranch>main</baseBranch>
+    <jira note="workshop repo - no Jira integration">N/A</jira>
+    <communicationLanguage>English</communicationLanguage>
+    <architecture path="_bmad-output/planning-artifacts/architecture.md"
+                  spine="_bmad-output/planning-artifacts/architecture/ARCHITECTURE-SPINE.md"
+                  binds="AD-10, AD-11, AD-12, AD-13, AD-18; AD-6 and AD-7 constrain the API this story consumes"/>
+    <filenameNote>RESOLVED 2026-09-03. This file and its story were renamed from story-2-1-... to
+      2-1-frontend-v1.{md,context.xml} via git mv, matching the ELCAi analyst convention
+      {feature}-{story}-{slug} and restoring bmad-dev-story's {story_key}.md auto-discovery. All ten
+      stories in implementation-artifacts now share one naming scheme.</filenameNote>
+  </metadata>
+
+  <problem>
+    Feature 1 shipped a headless HTTP API. Employees and admins need a browser interface to consume
+    the same endpoints without touching the backend. This story delivers an Angular 21 SPA covering
+    the six backend surfaces on main, by adopting an existing spike and closing its gaps.
+  </problem>
+
+  <baseline>
+    <decision date="2026-09-03">Framework is Angular 21, not React + Vite. The instructor spike on
+      spike/story-2-1-angular is adopted as Feature 2's deliverable.</decision>
+    <path>frontend-angular/ - NOT frontend/. The spike deliberately left frontend/ free.</path>
+    <warning id="B1">The spike branch is NOT mergeable. It branched before story 1.8 landed, so its diff
+      against main DELETES backend code and tests (GlobalExceptionHandler -26, MenuControllerTest -26,
+      OrderControllerTest -57). Cherry-pick the frontend-angular/ tree only. Verify with
+      `git diff main -- src/` returning empty before opening the PR.</warning>
+    <warning id="B2">node_modules (292 MB), dist/ and .angular/ are currently sitting untracked in the
+      working directory. Verify .gitignore covers them before the first commit.</warning>
+    <warning id="B3">docs/stories/STORY-6-frontend-v1.md is the workshop-lite twin of this story and still
+      describes React. Out of scope here; flag to the instructor.</warning>
+  </baseline>
+
+  <policy>
+    <rule id="P1">Frontend is decoupled: no changes to pom.xml, Java sources, or application.yml.</rule>
+    <rule id="P2">State is Angular signals, computed() for derived values. No NgRx, no third-party store,
+      no RxJS subjects for view state.</rule>
+    <rule id="P3">httpResource for reads, HttpClient on LunchApi for mutations (spine AD-11). After a
+      successful mutation call reload() - never patch a local copy of server state. No Axios, no fetch wrappers.</rule>
+    <rule id="P4">Angular Router, exactly three lazily-loaded routes (/, /orders, /admin) plus ** redirect to /.</rule>
+    <rule id="P5">Component-scoped CSS, already in place. Do not add Tailwind or a component library on top.
+      Do not mix styling systems.</rule>
+    <rule id="P6">AC 2.1.10 (design) executes before any component change.</rule>
+    <rule id="P7">X-Admin: true is attached by the interceptor ONLY when the router is under /admin, derived
+      from the active route and never from stored state (spine AD-10). No component sets identity headers itself.</rule>
+    <rule id="P8">X-User-Id is held in a signal, sourced from a "Sign in as" input, persisted to localStorage
+      with try/catch on every access so private-browsing degrades to a non-persistent session.</rule>
+    <rule id="P9">One apiErrorMessage() helper is the only place an HttpErrorResponse becomes display text.
+      Renders ApiError.message, never .code. No non-2xx is silently swallowed (spine AD-12).</rule>
+    <rule id="P10">DONE. The design step ran 2026-09-03 via bmad-ux and produced TWO peer spines, both
+      status:final with no open questions: frontend-angular/DESIGN.md (visual identity, light AND dark tokens)
+      and frontend-angular/EXPERIENCE.md (IA, nine states, behaviour, accessibility floor, three flows).
+      BOTH SPINES ARE THE ACCEPTANCE BAR for every visual and behavioural AC and win over any mock or restyle.
+      The original spike DESIGN.md is preserved verbatim as SPIKE-FINDINGS.md.</rule>
+    <rule id="P15">Theme follows prefers-color-scheme only. Redefine the SAME custom properties inside the media
+      query; components must NEVER branch on theme. No in-app toggle, no persisted preference, no mention of
+      theme in the UI. Only possible if rule P16 holds.</rule>
+    <rule id="P16">Every colour, border and radius resolves through var(--token). No component hard-codes a hex.
+      A hard-coded hex looks correct in light and breaks in dark, which is why AC 2.1.14 gates AC 2.1.15.</rule>
+    <rule id="P17">Destructive actions are two-step and INLINE ON THE ROW - never a modal. There are no dialog
+      components in this application: a modal would drag in a focus trap, escape handling, scroll locking, a
+      backdrop and rounded-corner elevation that DESIGN.md rules out. Exactly one row armed at a time; Escape and
+      Keep both disarm; the safe option is the default.</rule>
+    <rule id="P18">Every form field carries aria-invalid bound to touched-and-invalid plus aria-describedby
+      pointing at its own message element, which reserves height so validation never shifts layout. The /admin
+      route already complies and is the reference; the order form does not and must be brought in line.</rule>
+    <rule id="P11">Port 5173 is load-bearing. npm start stays pinned to `ng serve --port 5173` because
+      WebConfig allows exactly one CORS origin. Do not add a dev-server proxy - it was deliberately
+      rejected so the existing CORS config stays exercised (spine AD-13).</rule>
+    <rule id="P12">The server owns ordering (spine AD-18). Clients render the response order as received.</rule>
+    <rule id="P13">Standalone components, OnPush, inject() over constructor injection, input() over @Input(),
+      native @if/@for, selector prefix lunch-.</rule>
+    <rule id="P14">The reactive-forms (/) vs signal-forms (/admin) split is deliberate, was the spike's
+      experiment, and unifying it is OUT OF SCOPE. Note it in the PR so a reviewer does not read it as
+      sloppiness. Signal forms cost 34 kB raw on the /admin lazy chunk for a two-field form.</rule>
+  </policy>
+
+  <ubiquitousLanguage>
+    <term name="SPA">Single-Page Application - one bundle served by the Angular CLI dev server on port 5173 in dev.</term>
+    <term name="View / Route">Standalone Angular component lazily mapped to a URL path via loadComponent in app.routes.ts.</term>
+    <term name="Identity header">X-User-Id: &lt;employee-id&gt; - held in a signal, persisted to localStorage.</term>
+    <term name="Admin header">X-Admin: true - attached by the interceptor only when the active route is under /admin.</term>
+    <term name="Design doc">frontend-angular/DESIGN.md - currently a spike evaluation report; AC 2.1.10 requires an agreed layout and component spec.</term>
+    <term name="ApiError">Backend error response body: { code: string, message: string }. Frontend displays message.</term>
+  </ubiquitousLanguage>
+
+  <acceptanceCriteria>
+    <criterion id="2.1.1" state="satisfied-by-adoption">frontend-angular/ exists at repo root, scaffolded with
+      the Angular CLI (Angular 21, standalone components, no NgModules). The original `npm create vite@latest
+      --template react-ts` no longer applies.</criterion>
+    <criterion id="2.1.2" state="satisfied-by-adoption">cd frontend-angular &amp;&amp; npm install &amp;&amp; npm start
+      boots the dev server on port 5173, zero errors. npm start stays pinned to `ng serve --port 5173` (policy P11).</criterion>
+    <criterion id="2.1.3" state="open" reason="violated by the baseline's restyle commit" testedBy="menu-page.spec.ts (list render only)">Menu
+      view (/) lists today's menu from GET /api/v1/menu; each item shows name and priceChf formatted as CHF AND
+      NOTHING ELSE. NO availability indicator: the endpoint returns available items only (spine AD-6), so such an
+      indicator would always read "available". Do not build UI for a state the API cannot return.
+      VIOLATED BY THE BASELINE: commit 6aadae6 ("restyle the menu route with the frontend-design skill") added
+      &lt;span class="flag" [class.flag-out]="!item.available"&gt; rendering 'available'/'unavailable'. None of the four
+      preceding spike commits contain it - the polish pass introduced it disguised as styling. The .flag-out branch
+      is unreachable and its CSS is dead. REQUIRED: remove the .flag span from menu-page.html and the .flag/.flag-out
+      rules from menu-page.css; KEEP the dotted .leader (load-bearing to the editorial aesthetic, not an availability
+      cue); extend menu-page.spec.ts to assert the row contains name and price only, so a future restyle cannot
+      reintroduce it silently.
+      ALSO ADD THE MISSING EMPTY STATE (the / route is the one surface lacking one):
+      "No dishes on the menu today."</criterion>
+    <criterion id="2.1.4" state="open" reason="implemented but untested; per-field errors owed">Order form (on /)
+      picks menu item + quantity (1-10), submits via POST /api/v1/orders with X-User-Id. Not ticked until AC 2.1.12
+      covers it. ADDITIONALLY REQUIRED - per-field error association (policy P18): the order form currently
+      surfaces validation only through the shared banner with no field-level association. The /admin route already
+      does it properly and its pattern is now the standard - aria-invalid bound to touched-and-invalid,
+      aria-describedby pointing at its own message element, message element reserving min-height so validation does
+      not shift layout. Apply to both fields.</criterion>
+    <criterion id="2.1.5" state="open" reason="not met by baseline">My orders view (/orders) lists the caller's
+      orders from GET /api/v1/orders/me showing item name, quantity, status, and a Cancel button next to each
+      SUBMITTED order. The baseline resolves names from GET /api/v1/menu (available items only) and falls back to
+      a truncated id, so an order for a since-unavailable item shows no name. REQUIRED: resolve via
+      GET /api/v1/menu/{id} (story 2.7; the only availability-bypassing read, spine AD-7), one request per
+      DISTINCT menuItemId, cached per id, so N orders over M distinct items cost M requests not N. Verify with
+      MenuSeedData's seeded available=false item - the only runtime fixture that exercises this path.</criterion>
+    <criterion id="2.1.6" state="open" reason="reopened - confirm step now required">Cancel action, now TWO-STEP.
+      The single-click cancel (PATCH /api/v1/orders/{id}/cancel, reload(), confirmation on success) is implemented
+      and untested; a confirm step is now required, which reopens this AC.
+      INLINE ON THE ROW, NOT A MODAL (policy P17): (1) cell shows Cancel; (2) one click ARMS the row - 3px solid
+      var(--accent) left border, var(--accent-soft) ground, cell swaps to "Cancel order" plus "Keep", nothing sent
+      yet; (3) focus moves to the confirm, Escape or Keep disarms, arming another row disarms this one, exactly one
+      armed at a time; (4) confirming fires the PATCH, both buttons disable, confirm label becomes "Cancelling";
+      (5) success reloads and shows "Order cancelled.", failure shows the banner and disarms.
+      TWO ACCESSIBILITY REQUIREMENTS SPECIFIC TO THIS PATTERN: the confirm button accessible name must identify
+      the ROW not just the verb (aria-label="Cancel order of Risotto aux champignons") because "Cancel order" alone
+      is ambiguous in a table and a screen-reader user tabbing in has no visual row context; and arming is announced
+      through a POLITE live region, never role=alert, because arming is not an error.</criterion>
+    <criterion id="2.1.7" state="satisfied-by-adoption" testedBy="admin-page.spec.ts">Admin add-item view (/admin):
+      form for name + priceChf, POSTs to /api/v1/menu/items with X-Admin: true.</criterion>
+    <criterion id="2.1.8" state="satisfied-by-adoption">Identity handling per policies P7 and P8. The adopted
+      implementation EXCEEDS the original AC: deriving the admin header from the active route makes it true by
+      construction. Keep it that way.</criterion>
+    <criterion id="2.1.9" state="satisfied-by-adoption" testedBy="admin-page.spec.ts">Error display renders
+      ApiError.message (never .code) on non-2xx; never silently swallows a non-2xx response (policy P9).</criterion>
+    <criterion id="2.1.10" state="DONE" completedDate="2026-09-03" completedVia="bmad-ux">Design captured as TWO peer
+      spines in frontend-angular/: DESIGN.md (visual identity - nine ratified colour tokens, eight type roles,
+      spacing, the radius:0 rule, per-component visual specs, Do's and Don'ts) and EXPERIENCE.md (information
+      architecture, the eight-state vocabulary, component behaviour, interaction primitives, accessibility floor,
+      three named-protagonist flows; cross-references DESIGN.md tokens by name).
+      REWORDED 2026-09-03: this AC originally asked for wireframes in a single DESIGN.md. bmad-ux produces two peer
+      contracts and, following the Google Labs design.md spec, its DESIGN.md means VISUAL IDENTITY while layout,
+      states and behaviour belong to EXPERIENCE.md. The AC now names both rather than describing content that lives
+      in the other file.
+      Brownfield run - the visual identity already existed in the spike's CSS, so the spines RATIFY rather than
+      invent. The spike's original DESIGN.md is preserved verbatim as SPIKE-FINDINGS.md (an engineering evaluation
+      report recording two defects in Angular's own reference material).
+      FIVE open [ASSUMPTION] tags remain in the spines for the participant or instructor: /'s empty-state copy,
+      the light-only palette declaration, per-field error association on the order form, whether Cancel stays
+      unguarded, and whether the three protagonists are replaced with real ones.</criterion>
+    <criterion id="2.1.11" state="open" isNew="true">Remove the client-side re-sort. my-orders-page re-sorts with
+      b.createdAt.localeCompare(a.createdAt) although findAllByUserIdOrderByCreatedAtDesc already returns
+      newest-first. The server owns ordering (spine AD-18); the second mechanism agrees today only because Jackson
+      emits fixed-width UTC ISO-8601 and drifts silently if that changes. Delete the sort; render the response order
+      as received. The view must still display newest-first - assert against an already-sorted mocked response.</criterion>
+    <criterion id="2.1.12" state="open" isNew="true">Close the test gaps. Add my-orders-page.spec.ts and extend
+      coverage so all three routes have tests. Six minimum cases enumerated in testScaffolding.</criterion>
+    <criterion id="2.1.13" state="open" isNew="true">Add a real linter: `ng add @angular-eslint/schematics` plus a
+      `lint` script. npm run lint must pass on all committed frontend-angular/ code with no rules disabled. THIS
+      STORY EXPLICITLY AUTHORISES the new dev dependencies - the Angular 21 scaffold ships Prettier but no ESLint
+      and package.json has no lint script, so the DoD's lint gate was previously unsatisfiable. CLAUDE.md's
+      no-new-dependencies rule targets pom.xml; this is a separate manifest. Keep Prettier green alongside.</criterion>
+    <criterion id="2.1.14" state="open" isNew="true" source="AC 2.1.10 design-step audit">Every colour, border and
+      radius resolves through a token; no component hard-codes a hex. AUDIT - var(--token) vs hard-coded hex per file:
+      app.css 14/0 OK, menu-page.css 25/0 OK, my-orders-page.css 0/2 FAIL, admin-page.css 0/2 FAIL, error-banner
+      inline styles 0/3 FAIL. Only the shell and / were ever restyled.
+      FOUR off-palette values to DELETE rather than tokenise - the palette already covers each:
+      #a4262c (error ink, ErrorBanner + admin-page.css) becomes var(--accent) #b1341c;
+      #fdf3f4 (error ground, ErrorBanner) becomes var(--accent-soft) #f0d9c8;
+      #107c10 (confirmation, my-orders-page.css + admin-page.css) becomes var(--ok) #2f6b3d;
+      #e5e5e5 (table rule, my-orders-page.css) becomes var(--rule) #ddd6c8.
+      ALSO: drop ErrorBanner's border-radius:4px (DESIGN.md Shapes - radius is 0 everywhere), and unify
+      .confirmation on the menu-page treatment (3px solid var(--ok) left border plus var(--ok) text) so the same
+      component stops having two appearances depending on route.</criterion>
+    <criterion id="2.1.15" state="open" isNew="true" source="AC 2.1.10 design step" blockedBy="2.1.14">Dark mode via
+      prefers-color-scheme. Nine dark tokens are specified in DESIGN.md Colors. Redefine the SAME custom properties
+      inside the dark media query; components must not branch on theme (policy P15). ONLY POSSIBLE ONCE AC 2.1.14
+      LANDS - a hard-coded hex looks fine in light and breaks in dark, which is why the two are paired.
+      NOT A PLAIN INVERSION: the dark ground is a warm brown-black #1c1714, not neutral grey and not #000, so the
+      paper metaphor survives as unlit paper; paper-deep stays DARKER than the sheet, preserving the tonal
+      relationship; the accent LIFTS to #e8674a because #b1341c on #1c1714 fails AA.
+      TWO THINGS CHANGE BEYOND COLOUR: the canvas grain lightens instead of darkening (rgba(240,235,225,0.02)), and
+      the sheet drop shadow is DROPPED ENTIRELY - against a dark ground it reads as a black smear, so depth comes
+      from the tonal step alone. NO IN-APP TOGGLE - system preference is the whole mechanism.
+      WARNING: the dark contrast ratios in DESIGN.md are COMPUTED, NOT MEASURED. Verify each pair with a contrast
+      checker before ticking. accent-dark on accent-soft-dark is tightest at roughly 4.5:1 - if it measures below,
+      lighten accent-dark rather than darkening the ground, which would break the error banner border.</criterion>
+  </acceptanceCriteria>
+
+  <artifactsToReuse>
+    <branch ref="spike/story-2-1-angular" path="frontend-angular/" ac="2.1.1-2.1.9"
+            note="The adopted baseline. Cherry-pick this directory ONLY - never merge the branch (warning B1)."/>
+    <endpoint method="GET"    path="/api/v1/menu"               ac="2.1.3" note="available items only (findAllByAvailableTrue, spine AD-6)"/>
+    <endpoint method="GET"    path="/api/v1/menu/{id}"          ac="2.1.5" note="story 2.7 - the ONLY read returning an item regardless of availability (spine AD-7). Public, no headers."/>
+    <endpoint method="POST"   path="/api/v1/orders"             ac="2.1.4" headers="X-User-Id"/>
+    <endpoint method="GET"    path="/api/v1/orders/me"          ac="2.1.5, 2.1.11" headers="X-User-Id" note="ALREADY sorted newest-first"/>
+    <endpoint method="PATCH"  path="/api/v1/orders/{id}/cancel" ac="2.1.6" headers="X-User-Id"/>
+    <endpoint method="POST"   path="/api/v1/menu/items"         ac="2.1.7" headers="X-Admin: true"/>
+    <file path="src/main/java/ch/elca/training/lunch/common/WebConfig.java" ac="2.1.2"
+          reason="Existing CORS config permits exactly http://localhost:5173 - no backend change needed"/>
+    <file path="src/main/java/ch/elca/training/lunch/menu/MenuSeedData.java" ac="2.1.5"
+          reason="Seeds 'Soupe du jour' as available=false on purpose - the only runtime fixture exercising AC 2.1.5's resolution path. Do not flip it to true."/>
+  </artifactsToReuse>
+
+  <artifactsToCreate>
+    <file path="frontend-angular/DESIGN.md" change="rewrite" ac="2.1.10"
+          reason="Agreed layout + component spec from bmad-ux; existing spike report demoted to an appendix or SPIKE-FINDINGS.md"/>
+    <file path="frontend-angular/src/app/routes/my-orders-page/my-orders-page.ts" change="modify" ac="2.1.5, 2.1.11"
+          reason="Resolve names via GET /menu/{id} cached per distinct id; delete the client-side sort"/>
+    <file path="frontend-angular/src/app/api/lunch-api.ts" change="modify" ac="2.1.5"
+          reason="Add the by-id read if it belongs on the service rather than in the component's httpResource"/>
+    <file path="frontend-angular/src/app/routes/my-orders-page/my-orders-page.spec.ts" change="new" ac="2.1.12"
+          reason="The route has no test at all today"/>
+    <file path="frontend-angular/src/app/routes/menu-page/menu-page.spec.ts" change="extend" ac="2.1.12"
+          reason="Add the order-submit success and error cases"/>
+    <file path="frontend-angular/eslint.config.js" change="new" ac="2.1.13" reason="As the @angular-eslint schematic generates"/>
+    <file path="frontend-angular/package.json" change="modify" ac="2.1.13" reason="@angular-eslint dev deps plus a lint script"/>
+  </artifactsToCreate>
+
+  <implementationOutline>
+    <step n="1">Design step FIRST: invoke `bmad-ux` ("create UX specifications"); iterate on its proposed layout and
+      component breakdown; commit the agreed outcome as the body of DESIGN.md and move the existing spike report to
+      an appendix or SPIKE-FINDINGS.md. Do NOT delete the spike findings. (AC 2.1.10, policy P10)</step>
+    <step n="2">Branch off current main. Cherry-pick the frontend-angular/ tree from spike/story-2-1-angular -
+      that directory only. Confirm `git diff main -- src/` is empty. (warning B1)</step>
+    <step n="3">Verify .gitignore covers node_modules/, dist/ and .angular/ BEFORE the first commit. (warning B2)</step>
+    <step n="4">npm install; npm start; confirm the dev server on 5173 and the menu view loading against a running
+      backend. Tick ACs 2.1.1, 2.1.2, 2.1.3, 2.1.7, 2.1.8, 2.1.9 by verification, not re-implementation.</step>
+    <step n="5">AC 2.1.5: replace the GET /menu name lookup in my-orders-page with GET /menu/{id} per DISTINCT
+      menuItemId, cached per id. Verify against an order for the seeded available=false item - it must render a
+      name, not a truncated id.</step>
+    <step n="6">AC 2.1.11: delete the localeCompare sort from my-orders-page; render the response order as received.</step>
+    <step n="7">AC 2.1.12: add my-orders-page.spec.ts and extend menu-page.spec.ts. Six cases in testScaffolding.
+      Mind the two testing traps below - both cost the spike a red run.</step>
+    <step n="8">AC 2.1.13: ng add @angular-eslint/schematics; add the lint script; fix what it reports without
+      disabling rules. Keep prettier --check green.</step>
+    <step n="9">Verify: npm run build, npm run lint, npx prettier --check src, npm test all pass.</step>
+    <step n="10">Manual smoke: backend + dev server up simultaneously; walk every AC; INCLUDE an order against the
+      seeded unavailable item (the AC 2.1.5 proof); screenshots for the PR.</step>
+    <step n="11">PR against main. Reference the bmad-ux session (name the skill, paste an excerpt or screenshot) and
+      note the deliberate reactive-forms/signal-forms split.</step>
+  </implementationOutline>
+
+  <knownTraps>
+    <trap id="T1" source="angular-developer skill, testing-fundamentals.md - states the OPPOSITE">httpResource needs
+      an explicit detectChanges() to fire its request. Awaiting whenStable() first deadlocks against a request
+      nothing has answered yet.</trap>
+    <trap id="T2" source="angular-developer skill, testing-fundamentals.md - states the OPPOSITE">After flush(), an
+      async submit callback's continuation runs in a later microtask, so whenStable() settles BEFORE the signals are
+      written. Yield explicitly.</trap>
+    <trap id="T3" source="angular-developer skill, references/http-client.md">The reference shows a service annotated
+      @Service(). Angular has no @Service decorator - it is @Injectable(). Copied verbatim it will not compile.</trap>
+    <trap id="T4" source="Angular CLI --ai-config=claude">The CLI's generated CLAUDE.md says "Prefer Reactive forms
+      instead of Template-driven ones" and never mentions signal forms, contradicting angular-developer/SKILL.md
+      which prefers signal forms on v21+. Two official Google artefacts disagree and the CLI installs the stale one
+      automatically. Review it rather than trusting it.</trap>
+  </knownTraps>
+
+  <testScaffolding>
+    <test type="ComponentTest" location="frontend-angular/src/app/routes/my-orders-page/my-orders-page.spec.ts"
+          framework="@angular/build:unit-test (vitest + jsdom)" state="new">
+      <case id="tc3" ac="2.1.5, 2.1.11">renders orders newest-first from an already-sorted mocked response</case>
+      <case id="tc4" ac="2.1.5">resolves a name via GET /api/v1/menu/{id} for an item absent from GET /api/v1/menu</case>
+      <case id="tc5" ac="2.1.6">cancel succeeds, triggers reload(), and shows the confirmation</case>
+      <case id="tc6" ac="2.1.6, 2.1.9">cancel renders ApiError.message on 409 ALREADY_CANCELLED</case>
+    </test>
+    <test type="ComponentTest" location="frontend-angular/src/app/routes/menu-page/menu-page.spec.ts"
+          framework="@angular/build:unit-test (vitest + jsdom)" state="extend">
+      <case id="tc1" ac="2.1.4">order submit succeeds and resets the form</case>
+      <case id="tc2" ac="2.1.4, 2.1.9">order submit renders ApiError.message on a non-2xx</case>
+      <case id="existing" ac="2.1.3">menu list renders names and CHF formatting (already present)</case>
+    </test>
+    <test type="ComponentTest" location="frontend-angular/src/app/routes/admin-page/admin-page.spec.ts"
+          framework="@angular/build:unit-test (vitest + jsdom)" state="already-passing">
+      <case ac="2.1.7, 2.1.9">success, the 403 message-not-code path, and the required-name guard</case>
+    </test>
+    <test type="Lint" command="npm run lint" state="new">
+      <case ac="2.1.13">@angular-eslint passes on all committed frontend-angular/ code, no rules disabled</case>
+    </test>
+    <test type="Format" command="npx prettier --check src">
+      <case>Stays green alongside ESLint</case>
+    </test>
+    <test type="Build" command="npm run build">
+      <case>Production bundle generates without errors; three lazy route chunks</case>
+    </test>
+    <test type="ManualSmoke" location="human-in-browser">
+      <case>Backend + dev server up simultaneously; walk every AC; INCLUDE an order against the seeded
+        available=false item as the AC 2.1.5 proof; screenshots for the PR</case>
+    </test>
+  </testScaffolding>
+
+  <definitionOfDone>
+    <item>All ACs (2.1.1 - 2.1.13) ticked</item>
+    <item>frontend-angular/ cherry-picked onto a branch off current main with backend sources and tests unchanged - `git diff main -- src/` returns empty</item>
+    <item>PR description references the bmad-ux session that produced DESIGN.md (name the skill, paste an excerpt or screenshot)</item>
+    <item>PR description notes the deliberate reactive-forms / signal-forms split</item>
+    <item>npm run build succeeds</item>
+    <item>npm run lint passes (@angular-eslint, no rules disabled)</item>
+    <item>npx prettier --check src passes</item>
+    <item>npm test passes; all three routes have a spec file</item>
+    <item>DESIGN.md holds an agreed layout and component spec; the spike's findings are preserved, not deleted</item>
+    <item>No changes to pom.xml, backend Java sources, or application.yml</item>
+    <item>Manual smoke walkthrough with screenshots, including the unavailable-item name resolution</item>
+    <item>.gitignore covers node_modules/, dist/, .angular/ - verified before the first commit</item>
+    <item>PR opened against main</item>
+  </definitionOfDone>
+
+  <deviationsFromELCAi>
+    <deviation>No Jira ticket / no Analyzed transition - workshop repo does not use Jira.</deviation>
+    <deviation>No tech-spec-epic-2.md - Feature 2's technical framing lives in planning-artifacts/architecture.md
+      and the spine, which supersede the backend-only docs/tech-spec.md.</deviation>
+    <deviation>No Feature anchor files - the analyst workflow expects {planning_artifacts}/features/2-*/feature.md
+      and design.md. This repo has a flat epics.md. This story was written against the architecture spine instead.</deviation>
+    <deviation>Base branch is main, not develop - workshop is trunk-based.</deviation>
+    <deviation>SonarQube guardrails not applicable - no on-prem Sonar for this repo. @angular-eslint (AC 2.1.13)
+      is the closest analog and is now a DoD gate.</deviation>
+    <deviation>Filename breaks the ELCAi convention {feature}-{story}-{slug} - see metadata/filenameNote.</deviation>
+  </deviationsFromELCAi>
+
+</storyContext>

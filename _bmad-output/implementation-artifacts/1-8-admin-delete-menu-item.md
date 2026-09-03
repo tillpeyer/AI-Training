@@ -4,7 +4,8 @@
 |---|---|
 | **Epic** | 1 (Backend v1 — menu & orders) |
 | **Story ID** | 1.8 |
-| **Status** | ready-for-dev |
+| **Status** | done |
+| **Completed** | Merged to `main`. Corrected 2026-09-03: this field read `ready-for-dev` while the code was merged and `sprint-status.yaml` said `done`. |
 | **Estimate** | 2 CP *(1 CP = 1 developer-day incl. unit tests)* |
 | **Priority** | Should |
 | **Security** | ELCA (workshop repo — no Jira integration; see Deviations below) |
@@ -69,12 +70,12 @@ Canteen admins can currently *add* menu items (Story 1.5) and toggle their avail
 - [ ] `.\mvnw test` green (all existing tests still pass)
 - [ ] `.\mvnw spring-boot:run` boots and `curl -X DELETE -H "X-Admin: true" http://localhost:8080/api/v1/menu/items/{seeded-id}` returns 204 for a seeded item with no orders
 - [ ] PR opened against `main`
-- [ ] `story-1-8-admin-delete-menu-item.context.xml` companion file exists and is referenced from this story
+- [ ] `1-8-admin-delete-menu-item.context.xml` companion file exists and is referenced from this story
 - [ ] SonarQube-adjacent checks: no S1192 (duplicate string literals in error messages), no S2699 (assertion-free tests), catch specific exceptions only
 
 ## Deviations from ELCAi (accepted for the workshop repo)
 
-- **No Jira ticket / no `Analyzed` transition** — the workshop repo does not use Jira. Sprint state lives implicitly in this file's `Status` field.
+- **No Jira ticket / no `Analyzed` transition** — the workshop repo does not use Jira. Sprint state lives in **two** places, this file's `Status` field and `sprint-status.yaml`; they drifted apart until 2026-09-03. The yaml is what the SM and Dev skills read, so it wins — but keep both in step.
 - **No `sprint-status.yaml`** — orphan artefact without a Jira board; not bootstrapped for this story.
 - **No `tech-spec-epic-1.md`** — the repo has a single flat `docs/tech-spec.md` covering everything. Sections cited above (§Package layout · menu/, §API conventions) map to that document.
 - **`main` as base branch** — workshop uses trunk-based flow (feature branch → PR → main), not the `develop` branch ELCAi CI/CD guides assume.

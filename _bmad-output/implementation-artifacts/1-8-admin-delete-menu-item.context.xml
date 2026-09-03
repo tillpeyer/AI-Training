@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ELCAi story context companion for story-1-8-admin-delete-menu-item.md
+  ELCAi story context companion for 1-8-admin-delete-menu-item.md
   Purpose: give the Dev agent everything it needs to implement without re-reading the whole repo.
   Author: Mary (Business Analyst) - ELCAi analyst workflow.
 -->
@@ -10,7 +10,9 @@
     <epic>1</epic>
     <story>8</story>
     <cp>2</cp>
-    <status>ready-for-dev</status>
+    <status>done</status>
+    <statusNote>Merged to main. Corrected 2026-09-03: this field read ready-for-dev while the code was
+      merged and sprint-status.yaml said done.</statusNote>
     <baseBranch>main</baseBranch>
     <jira note="workshop repo — no Jira integration">N/A</jira>
     <communicationLanguage>English</communicationLanguage>
