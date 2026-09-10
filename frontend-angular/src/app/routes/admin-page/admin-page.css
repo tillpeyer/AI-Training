@@ -1,0 +1,32 @@
+.section {
+  font-size: 1.9rem;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.8rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0.5rem 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+.form-grid .field-label {
+  padding-top: 0.6rem;
+}
+
+/* The live region stays mounted so it can announce; it just shows nothing. */
+.confirmation.is-empty {
+  display: none;
+}
+
+@media (max-width: 34rem) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid .field-label {
+    padding-top: 0;
+  }
+}

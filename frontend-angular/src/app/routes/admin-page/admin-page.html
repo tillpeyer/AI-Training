@@ -1,0 +1,57 @@
+<h2 class="section">Add a menu item</h2>
+
+<!-- novalidate: see the note in menu-page.html — the validators reflect as
+     native attributes, and native validation would suppress the submit event. -->
+<form class="item-form" novalidate (submit)="$event.preventDefault(); onSubmit()">
+  <div class="form-grid">
+    <label class="field-label" for="item-name">Name</label>
+    <div>
+      <input
+        id="item-name"
+        class="field"
+        type="text"
+        autocomplete="off"
+        [formField]="itemForm.name"
+        [attr.aria-invalid]="itemForm.name().touched() && itemForm.name().invalid()"
+        aria-describedby="item-name-error"
+      />
+      <p class="field-error" id="item-name-error" role="alert">
+        @if (itemForm.name().touched() && itemForm.name().invalid()) {
+          {{ firstError(itemForm.name().errors()) }}
+        }
+      </p>
+    </div>
+
+    <label class="field-label" for="item-price">Price (CHF)</label>
+    <div>
+      <input
+        id="item-price"
+        class="field"
+        type="number"
+        step="0.01"
+        [formField]="itemForm.priceChf"
+        [attr.aria-invalid]="itemForm.priceChf().touched() && itemForm.priceChf().invalid()"
+        aria-describedby="item-price-error"
+      />
+      <p class="field-error" id="item-price-error" role="alert">
+        @if (itemForm.priceChf().touched() && itemForm.priceChf().invalid()) {
+          {{ firstError(itemForm.priceChf().errors()) }}
+        }
+      </p>
+    </div>
+  </div>
+
+  <!-- Disabled only while its own request is in flight — see menu-page.html. -->
+  <button class="btn btn-primary" type="submit" [disabled]="submitting()">
+    {{ submitting() ? 'Adding…' : 'Add menu item' }}
+  </button>
+</form>
+
+@if (errorMessage()) {
+  <lunch-error-banner [message]="errorMessage()" />
+}
+
+<!-- Region always mounted, content conditional, so it actually announces. -->
+<p class="confirmation" role="status" [class.is-empty]="!confirmation()">
+  {{ confirmation() }}
+</p>

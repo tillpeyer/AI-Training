@@ -1,0 +1,88 @@
+<h2 class="section">Today</h2>
+
+@if (menu.isLoading()) {
+  <p class="state-message">Loading the menu…</p>
+} @else if (menu.error()) {
+  <lunch-error-banner [message]="'Could not load the menu.'" />
+} @else if (items().length === 0) {
+  <p class="state-message">No dishes on the menu today.</p>
+} @else {
+  <ul class="dishes">
+    @for (item of items(); track item.id) {
+      <li class="dish-row" [style.--row]="$index">
+        <span class="dish-name">{{ item.name }}</span>
+        <span class="leader" aria-hidden="true"></span>
+        <span class="dish-price">CHF {{ item.priceChf.toFixed(2) }}</span>
+      </li>
+    }
+  </ul>
+}
+
+<div class="divider" aria-hidden="true"></div>
+
+<h2 class="section">Order</h2>
+
+<!-- novalidate is load-bearing: the signal-forms validators are reflected as
+     native min/max/required attributes, and native constraint validation would
+     otherwise abort submission before the submit event fires — so submit()
+     would never mark the fields touched and the styled errors below would never
+     render for an untouched field. -->
+<form class="order-form" novalidate (submit)="$event.preventDefault(); onSubmit()">
+  <div class="form-grid">
+    <label class="field-label" for="order-item">Dish</label>
+    <div>
+      <select
+        id="order-item"
+        class="field"
+        [formField]="orderForm.menuItemId"
+        [attr.aria-invalid]="orderForm.menuItemId().touched() && orderForm.menuItemId().invalid()"
+        aria-describedby="order-item-error"
+      >
+        <option value="">Choose a dish…</option>
+        @for (item of items(); track item.id) {
+          <option [value]="item.id">{{ item.name }}</option>
+        }
+      </select>
+      <p class="field-error" id="order-item-error" role="alert">
+        @if (orderForm.menuItemId().touched() && orderForm.menuItemId().invalid()) {
+          {{ firstError(orderForm.menuItemId().errors()) }}
+        }
+      </p>
+    </div>
+
+    <label class="field-label" for="order-quantity">Quantity</label>
+    <div>
+      <input
+        id="order-quantity"
+        class="field"
+        type="number"
+        [formField]="orderForm.quantity"
+        [attr.aria-invalid]="orderForm.quantity().touched() && orderForm.quantity().invalid()"
+        aria-describedby="order-quantity-error"
+      />
+      <p class="field-error" id="order-quantity-error" role="alert">
+        @if (orderForm.quantity().touched() && orderForm.quantity().invalid()) {
+          {{ firstError(orderForm.quantity().errors()) }}
+        }
+      </p>
+    </div>
+  </div>
+
+  <!-- Disabled only while its own request is in flight. An invalid form is not a
+       reason to disable: submit() marks every field touched and reveals the
+       per-field errors, which tells the employee *why* nothing happened. -->
+  <button class="btn btn-primary" type="submit" [disabled]="submitting()">
+    {{ submitting() ? 'Submitting…' : 'Add to order' }}
+  </button>
+</form>
+
+@if (errorMessage()) {
+  <lunch-error-banner [message]="errorMessage()" />
+}
+
+<!-- The live region is always in the DOM; only its content is conditional.
+     Inserting region and text in one mutation is the case assistive tech does
+     not announce. -->
+<p class="confirmation" role="status" [class.is-empty]="!confirmation()">
+  {{ confirmation() }}
+</p>

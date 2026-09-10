@@ -1,0 +1,89 @@
+<h2 class="section" #heading tabindex="-1">My orders</h2>
+
+@if (!signedIn()) {
+  <p class="state-message">Enter an employee id in "Sign in as" above to see your orders.</p>
+} @else if (firstLoad()) {
+  <p class="state-message">Loading orders…</p>
+} @else if (orders.error()) {
+  <!-- Fixed copy on a read failure: the backend message describes a fetch the
+       employee did not initiate, so it is not useful to them here. -->
+  <lunch-error-banner [message]="'Could not load your orders.'" />
+} @else if (rows().length === 0) {
+  <p class="state-message">You have no orders yet.</p>
+} @else {
+  <table class="orders">
+    <caption class="visually-hidden">
+      Your lunch orders, newest first
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Dish</th>
+        <th scope="col">Qty</th>
+        <th scope="col">Status</th>
+        <th scope="col"><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (order of rows(); track order.id) {
+        <tr [class.armed]="armedId() === order.id">
+          <td class="dish">{{ dishName(order) }}</td>
+          <td class="qty">{{ order.quantity }}</td>
+          <td class="status">{{ order.status }}</td>
+          <td class="actions">
+            @if (order.status === 'SUBMITTED') {
+              @if (armedId() === order.id) {
+                <button
+                  #confirmButton
+                  class="btn btn-confirm"
+                  type="button"
+                  [disabled]="cancellingId() === order.id"
+                  [attr.aria-label]="cancelLabel(order)"
+                  (click)="confirmCancel(order)"
+                >
+                  {{ cancellingId() === order.id ? 'Cancelling…' : 'Cancel order' }}
+                </button>
+                <button
+                  class="btn btn-quiet"
+                  type="button"
+                  [disabled]="cancellingId() === order.id"
+                  (click)="disarm()"
+                >
+                  Keep
+                </button>
+              } @else {
+                <!-- Sibling rows are blocked while any cancel is in flight, so two
+                     cancels can never be open at once against unkeyed state. -->
+                <button
+                  class="btn btn-quiet"
+                  type="button"
+                  [attr.data-arm-id]="order.id"
+                  [disabled]="busy()"
+                  [attr.aria-label]="cancelLabel(order)"
+                  (click)="arm(order.id)"
+                >
+                  Cancel
+                </button>
+              }
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
+
+<!-- Arming is not an error, so it is announced politely. The region is always
+     mounted; only its content is conditional. -->
+<p class="visually-hidden" role="status">
+  @if (armedId() !== '') {
+    Cancel this order?
+  }
+</p>
+
+@if (errorMessage()) {
+  <lunch-error-banner [message]="errorMessage()" />
+}
+
+<p class="confirmation" role="status" [class.is-empty]="!confirmation()">
+  {{ confirmation() }}
+</p>

@@ -12,6 +12,12 @@
 | **Base branch** | `main` |
 | **Architecture** | `_bmad-output/planning-artifacts/architecture.md` · spine `…/architecture/ARCHITECTURE-SPINE.md` (ADs 10–13, 18 bind this story) |
 
+## ⚠ Read this before anything else
+
+**None of this story's code is on `main`.** `frontend-angular/` on `main` holds `DESIGN.md`, `EXPERIENCE.md` and `SPIKE-FINDINGS.md` and nothing else — no `src/`, no `package.json`. The Angular tree exists only on the local branch `spike/story-2-1-angular`.
+
+Every "the page currently does X" statement below describes the **spike tree**, not your working directory. Bring it over first with `git checkout spike/story-2-1-angular -- frontend-angular`; until you do, there is nothing to modify.
+
 ## Problem Statement
 
 Feature 1 shipped a headless HTTP API — usable but not shippable to end users. Employees ordering lunch and admins editing the menu need a browser interface that consumes the existing endpoints without any backend changes. This story delivers a single-page application covering the six backend surfaces already on `main` (list menu, get item by id, submit order, list my orders, cancel order, add menu item), with mock-auth identity handled via `X-User-Id` and `X-Admin` headers exactly as the API expects.
@@ -27,7 +33,7 @@ Consequences you must not be surprised by:
 | | |
 |---|---|
 | **Deliverable path** | `frontend-angular/`, **not** `frontend/`. The spike deliberately left `frontend/` free for the React story that no longer exists. |
-| **The spike branch is not mergeable as-is** | It branched before story 1.8 landed, so its diff against `main` *deletes* backend code and tests (`GlobalExceptionHandler` −26 lines, `MenuControllerTest` −26, `OrderControllerTest` −57). **Rebase or cherry-pick the `frontend-angular/` tree only.** Never merge the branch. |
+| **The spike branch is not mergeable as-is** | `git merge-base main spike/story-2-1-angular` is `8c9c253`. The spike **never touched** any backend or planning file — diffing that merge-base against the spike tip on `GlobalExceptionHandler.java`, both controller tests, `architecture.md` and `project-context.md` produces **zero output**. The apparent deletions are branch staleness: `main` advanced past the fork. A whole-branch merge or `git diff main..spike \| git apply` would regress those files *plus* `ARCHITECTURE-SPINE.md`, `.gitattributes`, the style skill, and would undo the `story-2-1-…` → `2-1-…` rename this story records as resolved. **Use `git checkout spike/story-2-1-angular -- frontend-angular` — path-scoped.** Verify `git diff main -- src/` is empty before committing. |
 | **Five ACs arrive satisfied** | 2.1.1, 2.1.2, 2.1.7, 2.1.8, 2.1.9 are met by the adopted code. Two that looked satisfied are not: **2.1.3** (the restyle reintroduced the availability indicator the AC forbids) and **2.1.6** (cancel works but now needs a confirm step). See the AC list. |
 | **Estimate 8 → 3 → 5 CP** | Remaining: AC 2.1.3 (flag removal + empty state), 2.1.4 (test + per-field errors), 2.1.5, 2.1.6 (confirm step), and 2.1.11–2.1.15. AC 2.1.10 is done. |
 | **`docs/stories/STORY-6-frontend-v1.md`** | The workshop-lite twin of this story. It still describes React. Out of scope here; flag it to the instructor. |
@@ -87,7 +93,11 @@ Verify each against the rebased tree and tick. Do not re-implement.
 - [ ] **AC 2.1.5** — **My orders view (`/orders`)** lists the caller's orders from `GET /api/v1/orders/me`, showing item name, quantity, status, and a "Cancel" button next to each `SUBMITTED` order.
   > **Not met by the baseline.** `my-orders-page` currently resolves names from `GET /api/v1/menu`, which returns available items only, and falls back to a truncated id — so an order for a since-unavailable item shows no name. Its own comment calls this a known gap.
   >
-  > **Required:** resolve each order's name via **`GET /api/v1/menu/{id}`** (story 2.7's endpoint — the only read that returns an item regardless of availability, spine AD-7). One request per **distinct** `menuItemId`, cached per id, so N orders over M distinct items cost M requests and not N.
+  > **Required:** repoint the name lookup at **`GET /api/v1/menu/{id}`** — story 2.7's endpoint, and per **AD-7** the only supported way to resolve a `menuItemId` held on an `Order`. One request per **distinct** `menuItemId`, cached per id, so N orders over M distinct items cost M requests and not N.
+  >
+  > **A cache already exists — do not build a second one.** `my-orders-page` has a `namesById` computed signal today; only its *source* is wrong.
+  >
+  > **`design.md` ADR-2-1 has already decided the shape.** Component-local in-memory state inside `my-orders-page` (a plain `Map` or a small signal), populated lazily on first encounter of an id, fetched with a **direct `HttpClient` call — not `httpResource`**, because the number and identity of lookups is data-dependent and does not fit `httpResource`'s single-resource-per-declaration model. ADR-2-1 **explicitly rejects** extracting a shared injectable lookup service (no second consumer exists) and rejects widening `GET /menu` (a backend change that would blur AD-6).
   >
   > **Verify it with the seeded fixture.** `MenuSeedData` seeds *Soupe du jour* as `available = false` on purpose — it is the only fixture that exercises this path by hand. An order against it must render its name, not an id.
 
@@ -141,7 +151,7 @@ Verify each against the rebased tree and tick. Do not re-implement.
   >
   > ⚠️ **The dark contrast ratios in `DESIGN.md` are computed, not measured.** Verify each pair with a contrast checker before ticking this AC. `accent-dark` on `accent-soft-dark` is the tightest at roughly 4.5:1 — if it measures below, lighten `accent-dark` rather than darkening the ground, which would break the error banner's border.
 
-- [ ] **AC 2.1.11** — **Remove the client-side re-sort.** `my-orders-page` re-sorts with `b.createdAt.localeCompare(a.createdAt)` although `findAllByUserIdOrderByCreatedAtDesc` already returns orders newest-first. The server owns ordering (spine AD-18); a second mechanism agrees today only because Jackson currently emits fixed-width UTC ISO-8601, and drifts silently if that ever changes. Delete the sort and render the response order as received. The view must still display newest-first — assert it against a mocked response whose order is already correct.
+- [ ] **AC 2.1.11** — **Remove the client-side re-sort.** `my-orders-page` re-sorts with `b.createdAt.localeCompare(a.createdAt)` although `findAllByUserIdOrderByCreatedAtDesc` already returns orders newest-first. The server owns ordering (spine AD-18); a second mechanism agrees today only because Jackson currently emits fixed-width UTC ISO-8601, and drifts silently if that ever changes. **ADR-2-2** decided this: delete the sort and add **no replacement ordering logic** — not even a "defensive" comparator, which would re-introduce the dependency on an implicit serialization guarantee instead of removing it. Render the response order as received. The view must still display newest-first — assert it against a mocked response whose order is already correct.
 
 - [ ] **AC 2.1.12** — **Close the test gaps.** Add `my-orders-page.spec.ts` and extend coverage so all three routes have tests. Minimum cases:
   - order submit succeeds and resets the form (AC 2.1.4)
@@ -173,7 +183,7 @@ Verify each against the rebased tree and tick. Do not re-implement.
 - **Headers:** one functional `HttpInterceptor` attaches both identity headers. No component sets them itself.
 - **Routing:** Angular Router, exactly three lazily-loaded routes (`/`, `/orders`, `/admin`) plus a `**` redirect to `/`.
 - **Components:** standalone, `ChangeDetectionStrategy.OnPush`, `inject()` over constructor injection, `input()` over `@Input()`, native `@if` / `@for` control flow, selector prefix `lunch-`.
-- **Forms — inconsistent on purpose, and left that way.** `/` uses classic reactive forms; `/admin` uses signal forms. That split was the spike's experiment, not an oversight, and unifying it is **out of scope for this story.** Note it in the PR so a reviewer does not read it as sloppiness. Signal forms cost 34 kB raw on the `/admin` lazy chunk for a two-field form — worth knowing before extending them.
+- **Forms — signal forms on both routes.** *(Amended 2026-09-10 by code review.)* The story previously froze a deliberate reactive-forms (`/`) versus signal-forms (`/admin`) split inherited from the spike. The frontend was rebuilt from scratch rather than adopted, so there was no split to preserve, and `angular-developer` prefers signal forms for a new v21 application. Both routes now use `@angular/forms/signals`. Two consequences to know: validators are **reflected as native HTML attributes**, so any form relying on `submit()` to reveal its own errors must carry `novalidate`; and `min`/`max` **short-circuit on an empty value**, so every numeric field needs an explicit `required()` even when a range validator is present.
 - **Styling:** component-scoped CSS, already in place. Do not introduce Tailwind or a component library on top of it — do not mix styling systems.
 - **Design first:** AC 2.1.10 is executed before any component change.
 - **Beware the CLI's generated `CLAUDE.md`.** `ng new --ai-config=claude` writes guidance saying *"Prefer Reactive forms instead of Template-driven ones"* and never mentions signal forms, contradicting `angular-developer/SKILL.md`, which prefers signal forms on v21+. Two official Google artefacts disagree and the CLI installs the stale one automatically. Review it rather than trusting it.
@@ -195,13 +205,11 @@ Verify each against the rebased tree and tick. Do not re-implement.
 
 ## Artefacts to Create or Change
 
-Everything under `frontend-angular/`. Nothing outside it.
+Everything under `frontend-angular/`. Nothing outside it. **`DESIGN.md` and `EXPERIENCE.md` are not in this table** — AC 2.1.10 is complete and both are `status: final`. Read them; do not rewrite them.
 
 | Path | Change | AC(s) |
 |---|---|---|
-| `DESIGN.md` | **Rewrite** — agreed layout + component spec from `bmad-ux`; existing spike report demoted to an appendix or `SPIKE-FINDINGS.md` | 2.1.10 |
-| `src/app/routes/my-orders-page/my-orders-page.ts` | **Change** — resolve names via `GET /menu/{id}` cached per distinct id; delete the client-side sort | 2.1.5, 2.1.11 |
-| `src/app/api/lunch-api.ts` | **Change** — add the by-id read if it belongs on the service rather than in the component's `httpResource` | 2.1.5 |
+| `src/app/routes/my-orders-page/my-orders-page.ts` | **Change** — repoint `namesById` at `GET /menu/{id}` per distinct id via a direct `HttpClient` call (ADR-2-1); delete the client-side sort (ADR-2-2) | 2.1.5, 2.1.11 |
 | `src/app/routes/my-orders-page/my-orders-page.spec.ts` | **New** — the route has no test at all today | 2.1.12 |
 | `src/app/routes/menu-page/menu-page.spec.ts` | **Extend** — add the order-submit success and error cases | 2.1.12 |
 | `eslint.config.js` (or as the schematic generates), `package.json` | **New / change** — `@angular-eslint` plus a `lint` script | 2.1.13 |
@@ -221,7 +229,6 @@ Everything under `frontend-angular/`. Nothing outside it.
 - [ ] All ACs (2.1.1 – 2.1.15) ticked
 - [ ] `frontend-angular/` tree cherry-picked onto a branch off current `main`, with backend sources and tests **unchanged** — verify with `git diff main -- src/` returning empty
 - [ ] PR description references the `bmad-ux` session that produced `DESIGN.md` (name the skill, paste one representative excerpt or screenshot — makes the tool use reviewable, not just the artefact)
-- [ ] PR description notes the deliberate reactive-forms / signal-forms split so a reviewer does not read it as an oversight
 - [ ] `npm run build` succeeds
 - [ ] `npm run lint` passes (`@angular-eslint`, no rules disabled)
 - [ ] `npx prettier --check src` passes
@@ -232,6 +239,61 @@ Everything under `frontend-angular/`. Nothing outside it.
 - [ ] `.gitignore` covers `node_modules/`, `dist/`, `.angular/` — **verify before the first commit.** A 292 MB `node_modules` and a `dist/` tree are currently sitting untracked in the working directory.
 - [ ] PR opened against `main`
 - [ ] `2-1-frontend-v1.context.xml` companion updated in step with this file
+
+
+## Review Findings
+
+Code review of 2026-09-10. Three parallel layers: Blind Hunter (adversarial), Edge Case Hunter
+(branch and boundary walk), Acceptance Auditor (AC, AD and spine conformance). All three read the
+backend contract and verified framework behaviour against the shipped `@angular/forms` source rather
+than assuming it. 13 of 15 ACs met, AC 2.1.5 and 2.1.9 partly met, AC 2.1.13 not met. Nine of the ten
+binding ADs honoured, AD-12 partly. Both feature ADRs followed exactly.
+
+### Decisions taken
+
+- [x] [Review][Decision] Signal forms accepted on both routes. The story's frozen reactive/signal split existed to preserve the spike's experiment; building fresh left no split to preserve. Design Constraints amended; the DoD item asking the PR to explain the split is withdrawn.
+- [x] [Review][Decision] `EXPERIENCE.md`'s self-contradiction on disabling an invalid submit resolved in favour of line 107 ("never disabled for any other reason") over lines 105, 106 and 226. Recorded as an `[ASSUMPTION]` in that spine. Needs `novalidate` to actually work - see the patch below.
+
+### Patches applied
+
+- [ ] [Review][Patch] Empty numeric field posts `null` and Hibernate's "must not be null" reaches the banner; `min`/`max` short-circuit on empty, only `required` reports [menu-page.ts:32, admin-page.ts:32]
+- [ ] [Review][Patch] Native constraint validation suppresses the `submit` event, so an untouched field never gets its styled error [menu-page.html:69, admin-page.html:43]
+- [ ] [Review][Patch] Failed `GET /menu/{id}` swallowed forever; the row stays `...` and the confirm button degrades to `aria-label="Cancel order of ..."` [my-orders-page.ts:79]
+- [ ] [Review][Patch] Ordering while signed out surfaces the raw header error `Required header 'X-User-Id' is missing` [menu-page.ts:40]
+- [ ] [Review][Patch] Every keystroke in "Sign in as" fires `GET /orders/me`, writes `localStorage`, and blanks the table [app.html:24]
+- [ ] [Review][Patch] `armedId`/`errorMessage`/`confirmation` survive an identity change, leaving the live region stuck on a row that is gone [my-orders-page.ts:53]
+- [ ] [Review][Patch] Two concurrent cancels corrupt each other; `armedId` and `cancellingId` are unkeyed scalars [my-orders-page.ts:53]
+- [ ] [Review][Patch] A rejected cancel never reloads, so the row keeps offering an action that can only fail [my-orders-page.ts:120]
+- [ ] [Review][Patch] `reload()` unmounts the table, destroying focus and killing the Escape handler [my-orders-page.html:5]
+- [ ] [Review][Patch] Escape only disarms while focus is inside the non-focusable `<table>` [my-orders-page.html:14]
+- [ ] [Review][Patch] Focus is never restored on disarm or after a completed cancel [my-orders-page.ts:85]
+- [ ] [Review][Patch] Cancel does not capture the identity it was issued under [my-orders-page.ts:108]
+- [ ] [Review][Patch] Three subscriptions lack `takeUntilDestroyed`, so signals are written after destroy [my-orders-page.ts:77,112; menu-page.ts:47; admin-page.ts:46]
+- [ ] [Review][Patch] `role="status"` region and its content are inserted in one mutation, so nothing is announced [menu-page.html:78, admin-page.html:52, my-orders-page.html:82]
+- [ ] [Review][Patch] No `aria-current` on the active nav link [app.html:8]
+- [ ] [Review][Patch] Invented `min(0.05)` contradicts `@PositiveOrZero`, `step="0.05"` rejects a legal `7.99`, and the message is wrong for `0.02` [admin-page.ts:32, admin-page.html:29]
+- [ ] [Review][Patch] A whitespace-only or over-100-character item name reaches the backend and returns raw Bean Validation text [admin-page.ts:31]
+- [ ] [Review][Patch] `readStored()` skips the normalisation `signInAs()` applies, so a stored whitespace id sends `X-User-Id: "   "` [identity.ts:36]
+- [ ] [Review][Patch] The identity input is value-bound and trimmed per keystroke, so the DOM desynchronises from the signal [identity.ts:32, app.html:23]
+- [ ] [Review][Patch] `/` pending label reads `Adding...` where the spine says `Submitting...` [menu-page.html:70]
+- [ ] [Review][Patch] The order-status cell is set in chrome typography; DESIGN.md assigns `body` to table cells [my-orders-page.css:43]
+- [ ] [Review][Patch] Menu-row stagger-in is absent, and with it its reduced-motion escape [menu-page.css]
+- [ ] [Review][Patch] A comment claims the by-id lookup exists for "since-removed" dishes, but `MenuService.deleteById` makes removal impossible; the real reason is `available = false` [lunch-api.ts:37]
+- [ ] [Review][Patch] Tests: no `http.verify()` anywhere; the no-re-sort test flushes already-sorted data so it cannot detect a re-sort; two "blocks submit" tests pass vacuously; reset assertions skip the numeric field; the interceptor, `Identity` and `apiErrorMessage` are wholly untested and `X-Admin` is never asserted
+
+### Deferred
+
+- [x] [Review][Defer] AC 2.1.13 ESLint not added - deferred, needs a network install that rewrites the manifest and lockfile
+- [x] [Review][Defer] No `package-lock.json` - deferred, same approval gate; a cloning participant's install floats on `^` ranges
+- [x] [Review][Defer] Server-side per-field errors land in the page banner rather than the field's `aria-describedby` slot, though signal forms' `setSubmissionErrors` supports it - deferred, a larger design change than this story
+- [x] [Review][Defer] Neither read-error state offers a retry, so a transient failure wedges the route until navigation - deferred, `EXPERIENCE.md` specifies fixed copy and no retry control
+- [x] [Review][Defer] `API_BASE` hardcoded to localhost with `production` as the default build configuration - deferred, correct for the workshop
+- [x] [Review][Defer] A non-Latin-1 employee id may make every request fail at the header layer - deferred, unverified without a live reproduction
+- [x] [Review][Defer] The menu resource is never reloaded, so a dish vanishing after load yields a message containing a raw UUID - deferred, needs a product decision on menu freshness
+
+### Dismissed as noise
+
+Double-submit on either form - signal forms' `submit()` guards re-entry at `_validation_errors-chunk.mjs:1606`. The menu `<option>` list mutating under a live selection - unreachable, the resource is never reloaded today.
 
 ## Deviations from ELCAi (accepted for the workshop repo)
 

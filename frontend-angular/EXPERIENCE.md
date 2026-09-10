@@ -89,6 +89,9 @@ The full copy deck:
 | `/orders` | confirmed | `Order cancelled.` |
 | `/admin` | pending | `Adding…` |
 | `/admin` | confirmed | `Menu item added.` |
+| `/` | load-error | `Could not load the menu.` **(added 2026-09-10 by code review)** |
+| `/` | mutation-error, signed out | `Enter an employee id in "Sign in as" above to order.` **(added 2026-09-10 by code review)** |
+| `/orders` | dish name unresolved | `Unknown dish` **(added 2026-09-10 by code review)** |
 
 Uppercase letterspaced text is chrome only (`{typography.label}`, `{typography.nav}`, `{typography.action}`). A message is never uppercase.
 
@@ -108,6 +111,26 @@ Behavioural contracts. Visual specs are DESIGN.md's *Components* table.
 | **Row action (Cancel)** | Two-step. See *Destructive confirmation* below. Rendered only for `SUBMITTED` orders. |
 | **Error banner** | One per surface, `role="alert"`, placed directly below the control that failed. Cleared at the start of every new attempt. |
 | **Confirmation** | `role="status"`, appears below the control. Cleared at the start of every new attempt. Not auto-dismissed and not a toast — it persists until the next action. |
+
+> **[ASSUMPTION] resolved 2026-09-10 — an invalid form does not disable its submit button.**
+>
+> This document said both things. *Order form*, *Admin form* and Flow 3 step 2 each state the
+> submit button is disabled while the form is invalid; *Primary button* states it is disabled only
+> during its own in-flight request and "never disabled for any other reason — a disabled button
+> with no explanation is a dead end". Code review of 2026-09-10 resolved this in favour of
+> *Primary button*: clicking an invalid form marks every field touched and reveals the per-field
+> messages, which tells the employee why nothing happened. The three contrary statements are
+> superseded and left in place only so the reasoning stays traceable.
+>
+> **This requires `novalidate` on the form.** The signal-forms validators are reflected onto the
+> inputs as native `min`/`max`/`required` attributes, so native constraint validation would
+> otherwise abort submission before the `submit` event fires — `submit()` would never run, no
+> field would be marked touched, and the styled per-field message would never render.
+
+> **Field-level validation copy is not in the deck above.** The six field messages (`Choose a dish.`, `Quantity must be between 1 and 10.`, `Name is required.`,
+> `Name must be 100 characters or fewer.`, `Price is required.`, `Price cannot be negative.`)
+> follow the same sentence-fragment style and each restates a backend constraint rather than
+> inventing one. Added 2026-09-10 by code review.
 
 **Mutations refresh by reload, never by local patch.** After a successful cancel, call `reload()` on the orders resource (spine AD-11). Never splice the cancelled row out of a local array — the server is the truth.
 

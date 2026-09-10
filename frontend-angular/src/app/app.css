@@ -1,0 +1,89 @@
+.shell {
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+
+.wordmark {
+  font-size: 2.6rem;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+/* One deliberate flourish: ink, then a short accent run, then rule to the end.
+ * Echoes the dotted leaders in the menu below. */
+.wordmark-rule {
+  height: 2px;
+  margin: 0.6rem 0 1.1rem;
+  background: linear-gradient(
+    to right,
+    var(--ink) 0 3.5rem,
+    var(--accent) 3.5rem 4.6rem,
+    var(--rule) 4.6rem 100%
+  );
+}
+
+.header-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 1.4rem;
+}
+
+nav {
+  display: flex;
+  gap: 1.1rem;
+}
+
+nav a {
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink-soft);
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  transition: color 0.16s;
+}
+
+nav a:hover {
+  color: var(--ink);
+}
+
+nav a.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.identity .field {
+  width: 12rem;
+}
+
+.sheet {
+  display: block;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  box-shadow: var(--sheet-shadow);
+  padding: 2rem 2.25rem 2.5rem;
+  background-image: radial-gradient(circle at top left, var(--sheet-corner) 0, transparent 12rem);
+}
+
+@media (max-width: 34rem) {
+  .sheet {
+    padding: 1.5rem 1.25rem 1.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  nav a {
+    transition: none;
+  }
+}

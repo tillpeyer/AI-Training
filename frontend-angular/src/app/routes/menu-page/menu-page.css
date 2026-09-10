@@ -1,0 +1,88 @@
+.section {
+  font-size: 1.9rem;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.8rem;
+}
+
+.dishes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* name · dotted leader · price, baseline aligned. The leader is decoration. */
+.dish-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: var(--row-y) 0;
+  /* Staggered once on load, capped at the sixth row: 40ms apart, 280ms tail. */
+  animation: row-in 280ms ease-out both;
+  animation-delay: calc(min(var(--row, 0), 5) * 40ms);
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.dish-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.leader {
+  flex: 1 1 auto;
+  border-bottom: 1px dotted var(--rule-strong);
+  transform: translateY(-0.28rem);
+}
+
+.dish-price {
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.divider {
+  height: 1px;
+  margin: 2rem 0 1.6rem;
+  background: repeating-linear-gradient(90deg, var(--rule-strong) 0 6px, transparent 6px 12px);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  gap: 0.5rem 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+.form-grid .field-label {
+  padding-top: 0.6rem;
+}
+
+/* The live region stays mounted so it can announce; it just shows nothing. */
+.confirmation.is-empty {
+  display: none;
+}
+
+@media (max-width: 34rem) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid .field-label {
+    padding-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dish-row {
+    animation: none;
+  }
+}

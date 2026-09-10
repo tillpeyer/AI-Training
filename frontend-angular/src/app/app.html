@@ -1,0 +1,40 @@
+<div class="shell">
+  <header>
+    <h1 class="wordmark">Lunch Order</h1>
+    <div class="wordmark-rule" aria-hidden="true"></div>
+
+    <div class="header-row">
+      <nav aria-label="Main">
+        <a
+          routerLink="/"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          Menu
+        </a>
+        <a routerLink="/orders" routerLinkActive="active" ariaCurrentWhenActive="page">
+          My orders
+        </a>
+        <a routerLink="/admin" routerLinkActive="active" ariaCurrentWhenActive="page">Admin</a>
+      </nav>
+
+      <div class="identity">
+        <label class="field-label" for="sign-in-as">Sign in as</label>
+        <input
+          id="sign-in-as"
+          class="field"
+          type="text"
+          autocomplete="off"
+          placeholder="employee id"
+          [value]="initialUserId"
+          (input)="onIdentityInput($event)"
+        />
+      </div>
+    </div>
+  </header>
+
+  <main class="sheet">
+    <router-outlet />
+  </main>
+</div>
