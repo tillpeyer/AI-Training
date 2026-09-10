@@ -4,7 +4,7 @@
 |---|---|
 | **Feature** | 2 (Frontend v1 — browser client for the Lunch Order API) |
 | **Story ID** | 2.1 |
-| **Status** | ready-for-dev |
+| **Status** | in-progress |
 | **Estimate** | **5 CP** *(1 CP = 1 developer-day incl. unit tests)* — 8 CP → 3 CP on adopting the Angular baseline, then **3 → 5** when the design step added dark mode, a two-step cancel confirm, and per-field form errors. Of fifteen ACs, five arrive satisfied, AC 2.1.10 is done, nine remain open (see *Baseline* below) |
 | **Priority** | Must (kicks off Feature 2) |
 | **Security** | ELCA (workshop repo — no Jira integration; see Deviations below) |
@@ -256,30 +256,30 @@ binding ADs honoured, AD-12 partly. Both feature ADRs followed exactly.
 
 ### Patches applied
 
-- [ ] [Review][Patch] Empty numeric field posts `null` and Hibernate's "must not be null" reaches the banner; `min`/`max` short-circuit on empty, only `required` reports [menu-page.ts:32, admin-page.ts:32]
-- [ ] [Review][Patch] Native constraint validation suppresses the `submit` event, so an untouched field never gets its styled error [menu-page.html:69, admin-page.html:43]
-- [ ] [Review][Patch] Failed `GET /menu/{id}` swallowed forever; the row stays `...` and the confirm button degrades to `aria-label="Cancel order of ..."` [my-orders-page.ts:79]
-- [ ] [Review][Patch] Ordering while signed out surfaces the raw header error `Required header 'X-User-Id' is missing` [menu-page.ts:40]
-- [ ] [Review][Patch] Every keystroke in "Sign in as" fires `GET /orders/me`, writes `localStorage`, and blanks the table [app.html:24]
-- [ ] [Review][Patch] `armedId`/`errorMessage`/`confirmation` survive an identity change, leaving the live region stuck on a row that is gone [my-orders-page.ts:53]
-- [ ] [Review][Patch] Two concurrent cancels corrupt each other; `armedId` and `cancellingId` are unkeyed scalars [my-orders-page.ts:53]
-- [ ] [Review][Patch] A rejected cancel never reloads, so the row keeps offering an action that can only fail [my-orders-page.ts:120]
-- [ ] [Review][Patch] `reload()` unmounts the table, destroying focus and killing the Escape handler [my-orders-page.html:5]
-- [ ] [Review][Patch] Escape only disarms while focus is inside the non-focusable `<table>` [my-orders-page.html:14]
-- [ ] [Review][Patch] Focus is never restored on disarm or after a completed cancel [my-orders-page.ts:85]
-- [ ] [Review][Patch] Cancel does not capture the identity it was issued under [my-orders-page.ts:108]
-- [ ] [Review][Patch] Three subscriptions lack `takeUntilDestroyed`, so signals are written after destroy [my-orders-page.ts:77,112; menu-page.ts:47; admin-page.ts:46]
-- [ ] [Review][Patch] `role="status"` region and its content are inserted in one mutation, so nothing is announced [menu-page.html:78, admin-page.html:52, my-orders-page.html:82]
-- [ ] [Review][Patch] No `aria-current` on the active nav link [app.html:8]
-- [ ] [Review][Patch] Invented `min(0.05)` contradicts `@PositiveOrZero`, `step="0.05"` rejects a legal `7.99`, and the message is wrong for `0.02` [admin-page.ts:32, admin-page.html:29]
-- [ ] [Review][Patch] A whitespace-only or over-100-character item name reaches the backend and returns raw Bean Validation text [admin-page.ts:31]
-- [ ] [Review][Patch] `readStored()` skips the normalisation `signInAs()` applies, so a stored whitespace id sends `X-User-Id: "   "` [identity.ts:36]
-- [ ] [Review][Patch] The identity input is value-bound and trimmed per keystroke, so the DOM desynchronises from the signal [identity.ts:32, app.html:23]
-- [ ] [Review][Patch] `/` pending label reads `Adding...` where the spine says `Submitting...` [menu-page.html:70]
-- [ ] [Review][Patch] The order-status cell is set in chrome typography; DESIGN.md assigns `body` to table cells [my-orders-page.css:43]
-- [ ] [Review][Patch] Menu-row stagger-in is absent, and with it its reduced-motion escape [menu-page.css]
-- [ ] [Review][Patch] A comment claims the by-id lookup exists for "since-removed" dishes, but `MenuService.deleteById` makes removal impossible; the real reason is `available = false` [lunch-api.ts:37]
-- [ ] [Review][Patch] Tests: no `http.verify()` anywhere; the no-re-sort test flushes already-sorted data so it cannot detect a re-sort; two "blocks submit" tests pass vacuously; reset assertions skip the numeric field; the interceptor, `Identity` and `apiErrorMessage` are wholly untested and `X-Admin` is never asserted
+- [x] [Review][Patch] Empty numeric field posts `null` and Hibernate's "must not be null" reaches the banner; `min`/`max` short-circuit on empty, only `required` reports [menu-page.ts:32, admin-page.ts:32]
+- [x] [Review][Patch] Native constraint validation suppresses the `submit` event, so an untouched field never gets its styled error [menu-page.html:69, admin-page.html:43]
+- [x] [Review][Patch] Failed `GET /menu/{id}` swallowed forever; the row stays `...` and the confirm button degrades to `aria-label="Cancel order of ..."` [my-orders-page.ts:79]
+- [x] [Review][Patch] Ordering while signed out surfaces the raw header error `Required header 'X-User-Id' is missing` [menu-page.ts:40]
+- [x] [Review][Patch] Every keystroke in "Sign in as" fires `GET /orders/me`, writes `localStorage`, and blanks the table [app.html:24]
+- [x] [Review][Patch] `armedId`/`errorMessage`/`confirmation` survive an identity change, leaving the live region stuck on a row that is gone [my-orders-page.ts:53]
+- [x] [Review][Patch] Two concurrent cancels corrupt each other; `armedId` and `cancellingId` are unkeyed scalars [my-orders-page.ts:53]
+- [x] [Review][Patch] A rejected cancel never reloads, so the row keeps offering an action that can only fail [my-orders-page.ts:120]
+- [x] [Review][Patch] `reload()` unmounts the table, destroying focus and killing the Escape handler [my-orders-page.html:5]
+- [x] [Review][Patch] Escape only disarms while focus is inside the non-focusable `<table>` [my-orders-page.html:14]
+- [x] [Review][Patch] Focus is never restored on disarm or after a completed cancel [my-orders-page.ts:85]
+- [x] [Review][Patch] Cancel does not capture the identity it was issued under [my-orders-page.ts:108]
+- [x] [Review][Patch] Three subscriptions lack `takeUntilDestroyed`, so signals are written after destroy [my-orders-page.ts:77,112; menu-page.ts:47; admin-page.ts:46]
+- [x] [Review][Patch] `role="status"` region and its content are inserted in one mutation, so nothing is announced [menu-page.html:78, admin-page.html:52, my-orders-page.html:82]
+- [x] [Review][Patch] No `aria-current` on the active nav link [app.html:8]
+- [x] [Review][Patch] Invented `min(0.05)` contradicts `@PositiveOrZero`, `step="0.05"` rejects a legal `7.99`, and the message is wrong for `0.02` [admin-page.ts:32, admin-page.html:29]
+- [x] [Review][Patch] A whitespace-only or over-100-character item name reaches the backend and returns raw Bean Validation text [admin-page.ts:31]
+- [x] [Review][Patch] `readStored()` skips the normalisation `signInAs()` applies, so a stored whitespace id sends `X-User-Id: "   "` [identity.ts:36]
+- [x] [Review][Patch] The identity input is value-bound and trimmed per keystroke, so the DOM desynchronises from the signal [identity.ts:32, app.html:23]
+- [x] [Review][Patch] `/` pending label reads `Adding...` where the spine says `Submitting...` [menu-page.html:70]
+- [x] [Review][Patch] The order-status cell is set in chrome typography; DESIGN.md assigns `body` to table cells [my-orders-page.css:43]
+- [x] [Review][Patch] Menu-row stagger-in is absent, and with it its reduced-motion escape [menu-page.css]
+- [x] [Review][Patch] A comment claims the by-id lookup exists for "since-removed" dishes, but `MenuService.deleteById` makes removal impossible; the real reason is `available = false` [lunch-api.ts:37]
+- [x] [Review][Patch] Tests: no `http.verify()` anywhere; the no-re-sort test flushes already-sorted data so it cannot detect a re-sort; two "blocks submit" tests pass vacuously; reset assertions skip the numeric field; the interceptor, `Identity` and `apiErrorMessage` are wholly untested and `X-Admin` is never asserted
 
 ### Deferred
 
