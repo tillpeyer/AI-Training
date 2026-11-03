@@ -18,6 +18,30 @@ The Lunch Order API is a fictional service that handles a daily lunch menu and p
 | `docs/stories/STORY-6-frontend-v1.md` | Epic 2 frontend story draft — **Angular 21** (rewritten 2026-09-03; it previously said React + Vite). The workshop-lite twin of `2-1-frontend-v1.md` — run one or the other, never both. |
 | `frontend-angular/DESIGN.md` · `EXPERIENCE.md` | Feature 2's design of record — visual identity, and behaviour/accessibility. |
 
+## Before the session
+
+This is the **Advanced** workshop. It builds on *Agentic Engineering Basics for All Roles* — do that one first if you haven't.
+
+Do the checklist below **at least one working day before** the session. Installation problems eat the hands-on time, and most of them need a browser login or a new terminal that is hard to do live.
+
+| # | Check | Command (Windows PowerShell) | If it fails |
+|---|---|---|---|
+| 1 | You have a Claude licence and know its login email | — | Your licence email is listed on [manager.svc.elca.ch/my](https://manager.svc.elca.ch/my). It may be `@pul.elcagroup.com` or `@elca.vn`, not your usual address. Log in to claude.ai with **email login**, not SSO — SSO creates a second, unlicensed account. |
+| 2 | Scripts may run | `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` | No admin rights needed. |
+| 3 | Git is installed | `git --version` | `winget install --id Git.Git -e --source winget`, then open a **new** terminal. |
+| 4 | Java 21 is installed | `java -version` | See [Java 21](#java-21). |
+| 5 | Node.js 20+ is installed | `node --version` | See [Node.js 20+](#nodejs-20). |
+| 6 | Claude Code runs | `claude --version` | `irm https://claude.ai/install.ps1 \| iex`. If `claude` is still not found, add `%USERPROFILE%\.local\bin` to your user PATH and open a **new** terminal. |
+| 7 | npm finds the ELCAi package | `npm config set @elca-agenticengineering:registry https://artifactory.svc.elca.ch/artifactory/api/npm/prj_dbl-java-agenticengineering_npm/` | Run it as one line. |
+| 8 | npm is logged in to Artifactory | `npm login --auth-type=web --scope=@elca-agenticengineering` | "Token generation for user anonymous is prohibited" → open [artifactory.svc.elca.ch](https://artifactory.svc.elca.ch/) in your **default** browser, log in there, then run the command again. |
+| 9 | Your ELCA-MCP key is ready | — | Create it at [mcp.dev.elca.ch/settings](https://mcp.dev.elca.ch/settings) (that is the portal, not Claude Code's `/settings`). |
+
+On macOS and Linux, skip check 2 and use `curl -fsSL https://claude.ai/install.sh | bash` for check 6.
+
+**You do not need a Jira project or Confluence space.** The stories in `docs/stories/` are local files; every exercise works without them.
+
+Common questions (brownfield projects, what to commit, BMAD vs. alternatives) are answered in [`docs/faq.md`](docs/faq.md).
+
 ## Prerequisites
 
 You need **Java 21 (LTS)** and **Node.js 20+** on your machine before the workshop starts. Everything else in the project (Maven, Spring Boot, H2) is fetched by the Maven wrapper on first run — no manual install for those.
@@ -67,8 +91,10 @@ Required only for installing BMAD and ELCAi (steps 2 and 3 below). Any of `nvm`,
 ## Workshop flow (for participants)
 
 ```bash
-# 1. Clone this repo into a fresh folder
-git clone <repo-url> lunch-order
+# 1. Clone this repo into a fresh folder (ELCA Bitbucket; log in with your ELCA account)
+git clone https://bitbucket.svc.elca.ch/scm/dbl-java-agenticengineering/agentic-engineering-training.git lunch-order
+#    SSH alternative: ssh://git@bitbucket.svc.elca.ch:7999/dbl-java-agenticengineering/agentic-engineering-training.git
+#    Backup mirror (GitHub, SSH only for ELCA-managed accounts): git@github.com:tillpeyer/AI-Training.git
 cd lunch-order
 
 # 2. Install BMAD (pick "Claude Code" as the IDE)
@@ -76,6 +102,7 @@ cd lunch-order
 npx bmad-method install
 
 # 3. Install the ELCAi method on top — adds the Auditor (Olivia) + workshop agent customisations
+#    Needs checks 7 and 8 from "Before the session" (Artifactory registry + login).
 npm install -g @elca-agenticengineering/elcai-method
 elcai-method install
 
